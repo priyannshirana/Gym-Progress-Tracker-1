@@ -30,6 +30,20 @@ def init_db():
         )
     ''')
 
+
+    # ADD THIS NEW TABLE - Favorite Foods
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS favorite_foods (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            food_name TEXT NOT NULL,
+            quantity REAL NOT NULL,
+            unit TEXT NOT NULL,
+            protein REAL NOT NULL,
+            calories REAL NOT NULL,
+            times_logged INTEGER DEFAULT 1
+        )
+    ''')
+
     # Daily streaks
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS daily_stats (
@@ -452,3 +466,76 @@ def get_best_streak():
             prev_date = None
 
     return max_streak
+
+def add_favorite_food(food_name, quantity, unit, protein, calories):
+    """Add a food to favorites or increment its count"""
+    conn = sqlite3.connect(DATABASE_NAME)
+    cursor = conn.cursor()
+
+    # Check if this exact combo already exists
+    cursor.execute('''
+        SELECT id, times_logged FROM favorite_foods 
+        WHERE food_name = ? AND quantity = ? AND unit = ?
+    ''', (food_name, quantity, unit))
+
+    result = cursor.fetchone()
+
+    if result:
+        # Increment count
+        cursor.execute('''
+            UPDATE favorite_foods 
+            SET times_logged = times_logged + 1
+            WHERE id = ?
+        ''', (result[0],))
+    else:
+        # Add new favorite
+        cursor.execute('''
+            INSERT INTO favorite_foods (food_name, quantity, unit, protein, calories)
+            VALUES (?, ?, ?, ?, ?)
+        ''', (food_name, quantity, unit, protein, calories))
+
+    conn.commit()
+    conn.close()
+
+
+def get_favorite_foods(limit=5):
+    """Get top favorite foods sorted by times logged"""
+    conn = sqlite3.connect(DATABASE_NAME)
+    cursor = conn.cursor()
+
+    cursor.execute('''
+        SELECT food_name, quantity, unit, protein, calories, times_logged
+        FROM favorite_foods
+        ORDER BY times_logged DESC
+        LIMIT ?
+    ''', (limit,))
+
+    rows = cursor.fetchall()
+    conn.close()
+
+    favorites = []
+    for row in rows:
+        favorites.append({
+            'food_name': row[0],
+            'quantity': row[1],
+            'unit': row[2],
+            'protein': row[3],
+            'calories': row[4],
+            'times_logged': row[5]
+        })
+
+    return favorites
+
+
+def remove_favorite_food(food_name, quantity, unit):
+    """Remove a food from favorites"""
+    conn = sqlite3.connect(DATABASE_NAME)
+    cursor = conn.cursor()
+
+    cursor.execute('''
+        DELETE FROM favorite_foods
+        WHERE food_name = ? AND quantity = ? AND unit = ?
+    ''', (food_name, quantity, unit))
+
+    conn.commit()
+    conn.close()

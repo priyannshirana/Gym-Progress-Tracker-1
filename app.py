@@ -79,6 +79,9 @@ def home():
     best_streak = database.get_best_streak()
     total_days = database.get_total_days_tracked()
 
+    # Get favorite foods
+    favorite_foods = database.get_favorite_foods(limit=5)
+
     goal_just_reached = request.args.get('goal_reached') == '1'
 
     # Get success message if exists
@@ -94,7 +97,12 @@ def home():
                            calorie_percentage=calorie_percentage,
                            food_database=Food_database,
                            theme = theme,
-                           goal_reached = goal_just_reached, success_message=success_message)
+                           goal_reached = goal_just_reached,
+                           success_message=success_message,
+                           current_streak=current_streak,  # ADD THIS
+                           best_streak=best_streak,        # ADD THIS
+                           total_days=total_days,
+                           favorite_foods=favorite_foods)
 
 
 @app.route('/add_custom', methods=['POST'])
@@ -135,6 +143,9 @@ def add_custom():
 
         # Add to database (not to list!)
         database.add_meal(food_name, quantity, total_protein, total_calories, meal_time)
+
+        #Track as favorite
+        database.add_favorite_food(food, quantity, unit, total_protein, total_calories)
 
         # Check if goal just reached
         new_protein = current_protein + total_protein
@@ -209,6 +220,8 @@ def add_from_database():
 
         # Add to database
         database.add_meal(food_name, quantity, total_protein, total_calories, meal_time)
+
+        database.add_favorite_food(food, quantity, unit, total_protein, total_calories)
 
         # Check if goal just reached
         new_protein = current_protein + total_protein
@@ -381,6 +394,49 @@ def update_theme():
 
     database.update_theme(theme)
     return redirect(url_for('settings', success='theme_updated'))
+
+@app.route('/add_favorite/<food_name>/<quantity>/<unit>/<protein>/<calories>/<meal_time>')
+def add_favorite(food_name, quantity, unit, protein, calories, meal_time):
+    """Quick add a favorite food"""
+    try:
+        quantity = float(quantity)
+        protein = float(protein)
+        calories = float(calories)
+
+        # Create food name with unit
+        food_display = f"{food_name} ({quantity} {unit})"
+
+        # Check if this will reach goal
+        goals = database.get_goals()
+        meals = database.get_todays_meals()
+        current_protein = sum(float(meal['protein']) for meal in meals)
+        current_calories = sum(float(meal['calories']) for meal in meals)
+
+        was_below_protein = (current_protein / goals['protein_goal'] * 100) < 100
+        was_below_calories = (current_calories / goals['calorie_goal'] * 100) < 100
+
+        # Add to database
+        database.add_meal(food_display, quantity, protein, calories, meal_time)
+
+        # Update favorite count
+        database.add_favorite_food(food_name, quantity, unit, protein, calories)
+
+        # Check if goal just reached
+        new_protein = current_protein + protein
+        new_calories = current_calories + calories
+        new_protein_pct = (new_protein / goals['protein_goal'] * 100)
+        new_calorie_pct = (new_calories / goals['calorie_goal'] * 100)
+
+        goal_reached = (was_below_protein and new_protein_pct >= 100) or (was_below_calories and new_calorie_pct >= 100)
+
+        if goal_reached:
+            return redirect(url_for('home', success='food_logged', goal_reached='1'))
+        else:
+            return redirect(url_for('home', success='food_logged'))
+
+    except Exception as e:
+        print(f"Error: {e}")
+        return redirect(url_for('home', success='error'))
 
 if __name__ == '__main__':
     app.run(debug = True)

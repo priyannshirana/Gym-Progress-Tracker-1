@@ -515,6 +515,74 @@ select option {
             </div>
         </div>
     </div>
+    <!-- Quick Add Favorites -->
+    {% if favorite_foods %}
+    <div class="glass-card">
+        <h2 class="section-title">
+            <i class="fas fa-star"></i> Quick Add Favorites
+        </h2>
+
+        <p style="color: rgba(255, 255, 255, 0.8); margin-bottom: 20px; font-size: 0.95rem;">
+            Your most logged foods - click to add instantly!
+        </p>
+
+        <div style="display: grid; gap: 12px;">
+            {% for fav in favorite_foods %}
+            <div style="background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(10px); border-radius: 15px; padding: 18px; border: 1px solid rgba(255, 255, 255, 0.2);">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+                    <!-- Food Info -->
+                    <div style="flex: 1; min-width: 200px;">
+                        <div style="color: white; font-weight: 600; font-size: 1.05rem; margin-bottom: 5px;">
+                            {{ fav.food_name }} ({{ fav.quantity }} {{ fav.unit }})
+                        </div>
+                        <div style="color: rgba(255, 255, 255, 0.7); font-size: 0.9rem;">
+                            <i class="fas fa-drumstick-bite"></i> {{ "%.1f"|format(fav.protein) }}g protein  •
+                            <i class="fas fa-fire"></i> {{ fav.calories|int }} cal  •
+                            <span style="opacity: 0.6;">Logged {{ fav.times_logged }}x</span>
+                        </div>
+                    </div>
+
+                    <!-- Quick Add Buttons -->
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <a href="/add_favorite/{{ fav.food_name }}/{{ fav.quantity }}/{{ fav.unit }}/{{ fav.protein }}/{{ fav.calories }}/Breakfast"
+                           style="text-decoration: none;">
+                            <button style="padding: 8px 16px; border: none; border-radius: 20px; background: rgba(168, 202, 186, 0.3); color: white; font-size: 0.85rem; cursor: pointer; transition: all 0.2s ease; font-weight: 500;"
+                                    onmouseover="this.style.background='rgba(168, 202, 186, 0.5)'"
+                                    onmouseout="this.style.background='rgba(168, 202, 186, 0.3)'">
+                                Breakfast
+                            </button>
+                        </a>
+                        <a href="/add_favorite/{{ fav.food_name }}/{{ fav.quantity }}/{{ fav.unit }}/{{ fav.protein }}/{{ fav.calories }}/Lunch"
+                           style="text-decoration: none;">
+                            <button style="padding: 8px 16px; border: none; border-radius: 20px; background: rgba(168, 202, 186, 0.3); color: white; font-size: 0.85rem; cursor: pointer; transition: all 0.2s ease; font-weight: 500;"
+                                    onmouseover="this.style.background='rgba(168, 202, 186, 0.5)'"
+                                    onmouseout="this.style.background='rgba(168, 202, 186, 0.3)'">
+                                Lunch
+                            </button>
+                        </a>
+                        <a href="/add_favorite/{{ fav.food_name }}/{{ fav.quantity }}/{{ fav.unit }}/{{ fav.protein }}/{{ fav.calories }}/Dinner"
+                           style="text-decoration: none;">
+                            <button style="padding: 8px 16px; border: none; border-radius: 20px; background: rgba(168, 202, 186, 0.3); color: white; font-size: 0.85rem; cursor: pointer; transition: all 0.2s ease; font-weight: 500;"
+                                    onmouseover="this.style.background='rgba(168, 202, 186, 0.5)'"
+                                    onmouseout="this.style.background='rgba(168, 202, 186, 0.3)'">
+                                Dinner
+                            </button>
+                        </a>
+                        <a href="/add_favorite/{{ fav.food_name }}/{{ fav.quantity }}/{{ fav.unit }}/{{ fav.protein }}/{{ fav.calories }}/Pre-workout"
+                           style="text-decoration: none;">
+                            <button style="padding: 8px 16px; border: none; border-radius: 20px; background: rgba(251, 194, 235, 0.3); color: white; font-size: 0.85rem; cursor: pointer; transition: all 0.2s ease; font-weight: 500;"
+                                    onmouseover="this.style.background='rgba(251, 194, 235, 0.5)'"
+                                    onmouseout="this.style.background='rgba(251, 194, 235, 0.3)'">
+                                Snack
+                            </button>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
 
     <!-- Quick Log from Database -->
     <div class="glass-card">
