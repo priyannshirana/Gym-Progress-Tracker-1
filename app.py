@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for
 import database
 app = Flask(__name__)
+app.secret_key = 'nutritrack-secret-key-2024'
 
 database.init_db()
 
@@ -66,7 +67,22 @@ def home():
     protein_percentage = (proteinTotal / protein_goal * 100) if protein_goal > 0 else 0
     calorie_percentage = (caloriesTotal / calorie_goal * 100) if calorie_goal > 0 else 0
 
-    goal_reached = protein_percentage >= 100 or calorie_percentage >= 100
+    # Check if goals are met
+    protein_met = protein_percentage >= 100
+    calorie_met = calorie_percentage >= 100
+
+    # Record today's stats
+    database.record_daily_stats(protein_met, calorie_met)
+
+    # Get streak data
+    current_streak = database.get_current_streak()
+    best_streak = database.get_best_streak()
+    total_days = database.get_total_days_tracked()
+
+    goal_just_reached = request.args.get('goal_reached') == '1'
+
+    # Get success message if exists
+    success_message = request.args.get('success')
 
     return render_template('index.html',
                            meals=meals,
@@ -78,95 +94,180 @@ def home():
                            calorie_percentage=calorie_percentage,
                            food_database=Food_database,
                            theme = theme,
-                           goal_reached = goal_reached)
+                           goal_reached = goal_just_reached, success_message=success_message)
 
 
 @app.route('/add_custom', methods=['POST'])
 def add_custom():
-    food = request.form['food']
-    quantity = float(request.form['quantity'])
-    unit = request.form['unit']  # Get unit from form
-    protein_per_unit = float(request.form['protein'])
-    calories_per_unit = float(request.form['calories'])
-    meal_time = request.form['meal_time']
+    try:
+        food = request.form['food']
+        quantity = float(request.form['quantity'])
+        unit = request.form['unit']  # Get unit from form
+        protein_per_unit = float(request.form['protein'])
+        calories_per_unit = float(request.form['calories'])
+        meal_time = request.form['meal_time']
 
-    # Calculate totals
-    total_protein = protein_per_unit * quantity
-    total_calories = calories_per_unit * quantity
+        # Input Validation
+        if not food:
+            return redirect(url_for('home', success='error_empty_food'))
+        if quantity <= 0 or quantity > 10000:
+            return redirect(url_for('home', success = 'error_quantity'))
+        if protein_per_unit < 0 or protein_per_unit > 1000:
+            return redirect(url_for('home', success = 'error_protein'))
+        if calories_per_unit < 0 or calories_per_unit > 10000:
+            return redirect(url_for('home', success = 'error_calories'))
 
-    # Create food name with unit
-    food_name = f"{food} ({quantity} {unit})"
+        # Calculate totals
+        total_protein = protein_per_unit * quantity
+        total_calories = calories_per_unit * quantity
 
-    # Add to database (not to list!)
-    database.add_meal(food_name, quantity, total_protein, total_calories, meal_time)
+        # Create food name with unit
+        food_name = f"{food} ({quantity} {unit})"
 
-    return redirect(url_for('home'))
+        # Check if this will reach goal
+        goals = database.get_goals()
+        meals = database.get_todays_meals()
+        current_protein = sum(float(meal['protein']) for meal in meals)
+        current_calories = sum(float(meal['calories']) for meal in meals)
+
+        was_below_protein = (current_protein / goals['protein_goal'] * 100) < 100
+        was_below_calories = (current_calories / goals['calorie_goal'] * 100) < 100
+
+        # Add to database (not to list!)
+        database.add_meal(food_name, quantity, total_protein, total_calories, meal_time)
+
+        # Check if goal just reached
+        new_protein = current_protein + total_protein
+        new_calories = current_calories + total_calories
+        new_protein_pct = (new_protein / goals['protein_goal'] * 100)
+        new_calorie_pct = (new_calories / goals['calorie_goal'] * 100)
+
+        goal_reached = (was_below_protein and new_protein_pct >= 100) or (was_below_calories and new_calorie_pct >= 100)
+
+        if goal_reached:
+            return redirect(url_for('home', success='food_logged', goal_reached='1'))
+        else:
+            return redirect(url_for('home', success='food_logged'))
+
+    except ValueError:
+        return redirect(url_for('home', success='error_invalid'))
+    except Exception as e:
+        print(f"Error: {e}")
+        return redirect(url_for('home', success='error'))
 
 @app.route('/add_from_database', methods=['POST'])
 def add_from_database():
-    """Add a food item from the existing database"""
-    food = request.form['food']
-    quantity = float(request.form['quantity'])
-    unit = request.form['unit']
-    meal_time = request.form['meal_time']
 
-    # Get nutrition info from database
-    food_info = Food_database[food]
+    try:
+        """Add a food item from the existing database"""
+        food = request.form['food']
+        quantity = float(request.form['quantity'])
+        unit = request.form['unit']
+        meal_time = request.form['meal_time']
 
-    # Calculate multiplier based on unit
-    if unit == 'grams':
-        if food_info['base_Unit'] == '100g':
-            multiplier = quantity / 100
+        #Validation
+        if quantity <= 0 or quantity > 10000:
+            return redirect(url_for('home', success = "error_quantity"))
+        # Get nutrition info from database
+        food_info = Food_database[food]
+        if not food_info:
+            return redirect(url_for('home', success ='error_food_not_found'))
+        # Calculate multiplier based on unit
+        if unit == 'grams':
+            if food_info['base_Unit'] == '100g':
+                multiplier = quantity / 100
+            else:
+                grams_per_unit = food_info.get('grams_per_unit', 100)
+                multiplier = quantity / grams_per_unit
+        elif unit == 'piece':
+            if food_info['base_Unit'] in ['piece', 'slice', 'scoop', 'cup', 'tsp']:
+                multiplier = quantity
+            else:
+                grams_per_unit = food_info.get('grams_per_unit', 100)
+                total_grams = quantity * grams_per_unit
+                multiplier = total_grams / 100
         else:
-            grams_per_unit = food_info.get('grams_per_unit', 100)
-            multiplier = quantity / grams_per_unit
-    elif unit == 'piece':
-        if food_info['base_Unit'] in ['piece', 'slice', 'scoop', 'cup', 'tsp']:
             multiplier = quantity
+
+        # Calculate totals
+        total_protein = food_info['protein'] * multiplier
+        total_calories = food_info['calories'] * multiplier
+
+        # Create food name with unit
+        food_name = f"{food} ({quantity} {unit})"
+
+
+        # Check if this will reach goal
+        goals = database.get_goals()
+        meals = database.get_todays_meals()
+        current_protein = sum(float(meal['protein']) for meal in meals)
+        current_calories = sum(float(meal['calories']) for meal in meals)
+
+        was_below_protein = (current_protein / goals['protein_goal'] * 100) < 100
+        was_below_calories = (current_calories / goals['calorie_goal'] * 100) < 100
+
+
+        # Add to database
+        database.add_meal(food_name, quantity, total_protein, total_calories, meal_time)
+
+        # Check if goal just reached
+        new_protein = current_protein + total_protein
+        new_calories = current_calories + total_calories
+        new_protein_pct = (new_protein / goals['protein_goal'] * 100)
+        new_calorie_pct = (new_calories / goals['calorie_goal'] * 100)
+
+        goal_reached = (was_below_protein and new_protein_pct >= 100) or (was_below_calories and new_calorie_pct >= 100)
+
+        if goal_reached:
+            return redirect(url_for('home', success='food_logged', goal_reached='1'))
         else:
-            grams_per_unit = food_info.get('grams_per_unit', 100)
-            total_grams = quantity * grams_per_unit
-            multiplier = total_grams / 100
-    else:
-        multiplier = quantity
+            return redirect(url_for('home', success='food_logged'))
 
-    # Calculate totals
-    total_protein = food_info['protein'] * multiplier
-    total_calories = food_info['calories'] * multiplier
-
-    # Create food name with unit
-    food_name = f"{food} ({quantity} {unit})"
-
-    # Add to database (not to list!)
-    database.add_meal(food_name, quantity, total_protein, total_calories, meal_time)
-
-    return redirect(url_for('home'))
-
+    except ValueError:
+        return redirect(url_for('home', success='error_invalid'))
+    except Exception as e:
+        print(f"Error: {e}")
+        return redirect(url_for('home', success='error'))
 @app.route('/clear')
 def clear_meals():
     """Clear all logged meals (reset for new day)"""
     database.clear_todays_meals()  # Use database function
-    return redirect(url_for('home'))
+    return redirect(url_for('home', success = 'meals_cleared'))
 
 @app.route('/settings')
 def settings():
     """Display settings page"""
     goals = database.get_goals()
     theme = database.get_theme()
+    success_message = request.args.get('success')
+
     return render_template('settings.html',
                            protein_goal=goals['protein_goal'],
                            calorie_goal=goals['calorie_goal'],
-                           theme = theme)
+                           theme = theme,
+                           success_message = success_message)
 
 @app.route('/update_settings', methods=['POST'])
 def update_settings():
-    """Update user goals"""
-    protein_goal = float(request.form['protein_goal'])
-    calorie_goal = float(request.form['calorie_goal'])
+    try:
 
-    database.update_goals(protein_goal, calorie_goal)
+        """Update user goals"""
+        protein_goal = float(request.form['protein_goal'])
+        calorie_goal = float(request.form['calorie_goal'])
 
-    return redirect(url_for('home'))
+        # VALIDATION
+        if protein_goal <= 0 or protein_goal > 1000:
+            return redirect(url_for('settings', success='error_protein'))
+
+        if calorie_goal <= 0 or calorie_goal > 10000:
+            return redirect(url_for('settings', success='error_calories'))
+
+
+        database.update_goals(protein_goal, calorie_goal)
+        return redirect(url_for('settings', success='goals_updated'))
+
+    except ValueError:
+        return redirect(url_for('settings', success='error_invalid'))
 @app.route('/onboarding')
 def onboarding():
     """Show onboarding page for new users"""
@@ -174,20 +275,31 @@ def onboarding():
 
 @app.route('/complete_onboarding', methods=['POST'])
 def complete_onboarding():
-    """Save onboarding data and redirect to home"""
-    # Get form data
-    protein_goal = float(request.form['protein_goal'])
-    calorie_goal = float(request.form['calorie_goal'])
-    cuisine = request.form['cuisine_preference']
-    tracking_goal = request.form['tracking_goal']
-    weight = float(request.form['weight'])
-    activity_level = request.form['activity_level']
+    try:
+        """Save onboarding data and redirect to home"""
+        # Get form data
+        protein_goal = float(request.form['protein_goal'])
+        calorie_goal = float(request.form['calorie_goal'])
+        cuisine = request.form['cuisine_preference']
+        tracking_goal = request.form['tracking_goal']
+        weight = float(request.form['weight'])
+        activity_level = request.form['activity_level']
 
-    # Save to database
-    database.save_onboarding(protein_goal, calorie_goal, cuisine, tracking_goal, weight, activity_level)
+        # VALIDATION
+        if weight <= 0 or weight > 1000:
+            return "Invalid weight", 400
 
-    # Redirect to home page
-    return redirect(url_for('home'))
+        if protein_goal <= 0 or protein_goal > 1000:
+            return "Invalid protein goal", 400
+
+        if calorie_goal <= 0 or calorie_goal > 10000:
+            return "Invalid calorie goal", 400
+
+        database.save_onboarding(protein_goal, calorie_goal, cuisine, tracking_goal, weight, activity_level)
+        return redirect(url_for('home'))
+
+    except ValueError:
+        return "Invalid input", 400
 
 @app.route('/fix_db')
 def fix_db():
@@ -219,34 +331,56 @@ def gym_tracker():
     # Get today's workouts
     workouts = database.get_todays_workouts()
     theme = database.get_theme()
-    return render_template('gym_tracker.html', workouts=workouts, theme= theme)
+    success_message = request.args.get('success')
+    return render_template('gym_tracker.html',
+                           workouts=workouts,
+                           theme= theme,
+                           success_message=success_message)
 
 @app.route('/add_workout', methods=['POST'])
 def add_workout():
-    """Add a workout to the database"""
-    exercise = request.form['exercise']
-    weight = float(request.form['weight'])
-    reps = int(request.form['reps'])
-    sets = int(request.form['sets'])
-    notes = request.form.get('notes', '')  # Optional field
+    try:
+        """Add a workout to the database"""
+        exercise = request.form['exercise']
+        weight = float(request.form['weight'])
+        reps = int(request.form['reps'])
+        sets = int(request.form['sets'])
+        notes = request.form.get('notes', '')  # Optional field
 
-    # Save to database
-    database.add_workout(exercise, weight, reps, sets, notes)
+        # VALIDATION
+        if not exercise:
+            return redirect(url_for('gym_tracker', success='error_empty_exercise'))
 
-    return redirect(url_for('gym_tracker'))
+        if weight < 0 or weight > 10000:
+            return redirect(url_for('gym_tracker', success='error_weight'))
+
+        if reps <= 0 or reps > 1000:
+            return redirect(url_for('gym_tracker', success='error_reps'))
+
+        if sets <= 0 or sets > 100:
+            return redirect(url_for('gym_tracker', success='error_sets'))
+
+        database.add_workout(exercise, weight, reps, sets, notes)
+        return redirect(url_for('gym_tracker', success='workout_logged'))
+
+    except ValueError:
+        return redirect(url_for('gym_tracker', success='error_invalid'))
 
 @app.route('/clear_workouts')
 def clear_workouts():
     """Clear all workouts for today"""
     database.clear_todays_workouts()
-    return redirect(url_for('gym_tracker'))
+    return redirect(url_for('gym_tracker',  success='workouts_cleared'))
 
 @app.route('/update_theme', methods=['POST'])
 def update_theme():
     """Update user's theme preference"""
     theme = request.form['theme']
+    if theme not in ['soft', 'minimal']:
+        return redirect(url_for('settings', success='error_theme'))
+
     database.update_theme(theme)
-    return redirect(url_for('settings'))
+    return redirect(url_for('settings', success='theme_updated'))
 
 if __name__ == '__main__':
     app.run(debug = True)

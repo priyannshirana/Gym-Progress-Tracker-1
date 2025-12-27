@@ -430,5 +430,61 @@
     {% endif %}
   </div>
 </div>
+
+<!-- Toast Notification System -->
+<div id="toast" style="position: fixed; bottom: 30px; right: 30px; padding: 18px 28px; border-radius: 50px; display: none; z-index: 10000; box-shadow: 0 8px 25px rgba(0,0,0,0.3); backdrop-filter: blur(10px); font-weight: 600; transition: all 0.3s ease;">
+  <i class="fas fa-check-circle" style="margin-right: 8px;"></i>
+  <span id="toast-message"></span>
+</div>
+
+<script>
+  function showToast(message, type = 'success') {
+      const toast = document.getElementById('toast');
+      const toastMessage = document.getElementById('toast-message');
+      const icon = toast.querySelector('i');
+
+      toastMessage.textContent = message;
+
+      if (type === 'success') {
+          toast.style.background = 'linear-gradient(135deg, #a8caba 0%, #c9b6e4 100%)';
+          toast.style.color = 'white';
+          icon.className = 'fas fa-check-circle';
+      } else if (type === 'error') {
+          toast.style.background = 'linear-gradient(135deg, #fbc2eb 0%, #f5b2c8 100%)';
+          toast.style.color = 'white';
+          icon.className = 'fas fa-exclamation-circle';
+      }
+
+      toast.style.display = 'inline-block';
+      toast.style.opacity = '0';
+      setTimeout(() => toast.style.opacity = '1', 10);
+
+      setTimeout(() => {
+          toast.style.opacity = '0';
+          setTimeout(() => toast.style.display = 'none', 300);
+      }, 3000);
+  }
+
+  {% if success_message %}
+      const successType = '{{ success_message }}';
+
+      if (successType === 'workout_logged') {
+          showToast('Workout logged! 💪', 'success');
+      } else if (successType === 'workouts_cleared') {
+          showToast('All workouts cleared! 🗑️', 'success');
+      } else if (successType === 'error_weight') {
+          showToast('Invalid weight!', 'error');
+      } else if (successType === 'error_reps') {
+          showToast('Invalid reps!', 'error');
+      } else if (successType === 'error_sets') {
+          showToast('Invalid sets!', 'error');
+      } else if (successType === 'error_empty_exercise') {
+          showToast('Please enter an exercise name!', 'error');
+      } else if (successType === 'error_invalid') {
+          showToast('Invalid input! Please check your values.', 'error');
+      }
+  {% endif %}
+</script>
+
 </body>
 </html>

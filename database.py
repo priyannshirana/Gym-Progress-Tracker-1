@@ -1,5 +1,5 @@
 import sqlite3
-from datetime import datetime
+from datetime import datetime, timedelta
 
 DATABASE_NAME = 'tracker.db'
 
@@ -30,6 +30,16 @@ def init_db():
         )
     ''')
 
+    # Daily streaks
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS daily_stats (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            date TEXT NOT NULL UNIQUE,
+            protein_goal_met INTEGER DEFAULT 0,
+            calorie_goal_met INTEGER DEFAULT 0,
+            both_goals_met INTEGER DEFAULT 0
+        )
+    ''')
 
     # Create user_preferences table for onboarding
     cursor.execute('''
@@ -336,3 +346,109 @@ def update_theme(theme):
 
     conn.commit()
     conn.close()
+
+def record_daily_stats(protein_met, calorie_met):
+    """Record whether goals were met today"""
+    conn = sqlite3.connect(DATABASE_NAME)
+    cursor = conn.cursor()
+
+    today = datetime.now().strftime('%Y-%m-%d')
+    both_met = 1 if (protein_met and calorie_met) else 0
+
+    # Insert or update today's stats
+    cursor.execute('''
+        INSERT INTO daily_stats (date, protein_goal_met, calorie_goal_met, both_goals_met)
+        VALUES (?, ?, ?, ?)
+        ON CONFLICT(date) DO UPDATE SET
+            protein_goal_met = ?,
+            calorie_goal_met = ?,
+            both_goals_met = ?
+    ''', (today, protein_met, calorie_met, both_met, protein_met, calorie_met, both_met))
+
+    conn.commit()
+    conn.close()
+
+
+def get_current_streak():
+    """Get the current streak of consecutive days meeting goals"""
+    conn = sqlite3.connect(DATABASE_NAME)
+    cursor = conn.cursor()
+
+    # Get all days where both goals were met, ordered by date descending
+    cursor.execute('''
+        SELECT date, both_goals_met
+        FROM daily_stats
+        WHERE both_goals_met = 1
+        ORDER BY date DESC
+    ''')
+
+    rows = cursor.fetchall()
+    conn.close()
+
+    if not rows:
+        return 0
+
+    # Check for consecutive days
+    streak = 0
+    today = datetime.now().date()
+
+    for i, (date_str, _) in enumerate(rows):
+        date_obj = datetime.strptime(date_str, '%Y-%m-%d').date()
+        expected_date = today - timedelta(days=i)
+
+        if date_obj == expected_date:
+            streak += 1
+        else:
+            break
+
+    return streak
+
+
+def get_total_days_tracked():
+    """Get total number of days with any activity"""
+    conn = sqlite3.connect(DATABASE_NAME)
+    cursor = conn.cursor()
+
+    cursor.execute('SELECT COUNT(*) FROM daily_stats')
+    result = cursor.fetchone()
+
+    conn.close()
+    return result[0] if result else 0
+
+
+def get_best_streak():
+    """Get the longest streak ever achieved"""
+    conn = sqlite3.connect(DATABASE_NAME)
+    cursor = conn.cursor()
+
+    cursor.execute('''
+        SELECT date, both_goals_met
+        FROM daily_stats
+        ORDER BY date ASC
+    ''')
+
+    rows = cursor.fetchall()
+    conn.close()
+
+    if not rows:
+        return 0
+
+    max_streak = 0
+    current_streak = 0
+    prev_date = None
+
+    for date_str, both_met in rows:
+        date_obj = datetime.strptime(date_str, '%Y-%m-%d').date()
+
+        if both_met == 1:
+            if prev_date is None or (date_obj - prev_date).days == 1:
+                current_streak += 1
+                max_streak = max(max_streak, current_streak)
+            else:
+                current_streak = 1
+            prev_date = date_obj
+        else:
+            current_streak = 0
+            prev_date = None
+
+    return max_streak

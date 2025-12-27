@@ -259,28 +259,35 @@
             font-size: 0.95rem;
         }
 
-        input, select, textarea {
-            width: 100%;
-            padding: 14px 18px;
-            border-radius: 15px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(10px);
-            color: white;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-        }
+input, select, textarea {
+    width: 100%;
+    padding: 14px 18px;
+    border-radius: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    color: #2d3748;  /* CHANGED: Dark text for readability */
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
 
-        input::placeholder, select::placeholder, textarea::placeholder {
-            color: rgba(255, 255, 255, 0.5);
-        }
+input::placeholder, select::placeholder, textarea::placeholder {
+    color: rgba(45, 55, 72, 0.5);  /* CHANGED: Darker placeholder */
+}
 
-        input:focus, select:focus, textarea:focus {
-            outline: none;
-            border-color: rgba(255, 255, 255, 0.4);
-            background: rgba(255, 255, 255, 0.2);
-            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
-        }
+input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.4);
+    background: rgba(255, 255, 255, 0.25);  /* CHANGED: Lighter on focus */
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+}
+
+/* Darker text for select options */
+select option {
+    background: white;
+    color: #2d3748;
+}
 
         select {
             cursor: pointer;
@@ -664,6 +671,50 @@
         </div>
         {% endif %}
     </div>
+    <!-- Streak Stats -->
+    <div class="glass-card">
+        <h2 class="section-title" style="justify-content: center;">
+            <i class="fas fa-fire"></i> Your Progress
+        </h2>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 20px; text-align: center;">
+            <!-- Current Streak -->
+            <div style="background: rgba(255, 255, 255, 0.1); padding: 25px; border-radius: 20px; border: 2px solid rgba(255, 255, 255, 0.2);">
+                <div style="font-size: 3rem; margin-bottom: 10px;">🔥</div>
+                <div style="font-size: 2.5rem; font-weight: 700; color: white; margin-bottom: 5px;">{{ current_streak }}</div>
+                <div style="font-size: 0.95rem; color: rgba(255, 255, 255, 0.8);">Day Streak</div>
+            </div>
+
+            <!-- Best Streak -->
+            <div style="background: rgba(255, 255, 255, 0.1); padding: 25px; border-radius: 20px; border: 2px solid rgba(255, 255, 255, 0.2);">
+                <div style="font-size: 3rem; margin-bottom: 10px;">🏆</div>
+                <div style="font-size: 2.5rem; font-weight: 700; color: white; margin-bottom: 5px;">{{ best_streak }}</div>
+                <div style="font-size: 0.95rem; color: rgba(255, 255, 255, 0.8);">Best Streak</div>
+            </div>
+
+            <!-- Total Days -->
+            <div style="background: rgba(255, 255, 255, 0.1); padding: 25px; border-radius: 20px; border: 2px solid rgba(255, 255, 255, 0.2);">
+                <div style="font-size: 3rem; margin-bottom: 10px;">📅</div>
+                <div style="font-size: 2.5rem; font-weight: 700; color: white; margin-bottom: 5px;">{{ total_days }}</div>
+                <div style="font-size: 0.95rem; color: rgba(255, 255, 255, 0.8);">Days Tracked</div>
+            </div>
+        </div>
+
+        {% if current_streak >= 3 %}
+        <div style="text-align: center; margin-top: 20px; padding: 15px; background: rgba(255, 255, 255, 0.15); border-radius: 15px;">
+            <span style="color: white; font-size: 1.1rem; font-weight: 600;">
+                {% if current_streak >= 7 %}
+                    🌟 Amazing! You're on fire! Keep it up! 🌟
+                {% elif current_streak >= 5 %}
+                    💪 Fantastic streak! You're crushing it!
+                {% else %}
+                    ✨ Great job! Keep the momentum going!
+                {% endif %}
+            </span>
+        </div>
+        {% endif %}
+    </div>
+
 </div>
 
 <!-- Celebration Confetti -->
