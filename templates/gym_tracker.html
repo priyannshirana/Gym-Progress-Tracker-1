@@ -1,237 +1,434 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Gym Tracker</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Workout Tracker</title>
   <link rel="stylesheet" href="{{ url_for('static', filename=theme + '_theme.css') }}">
 
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
   <style>
-    /* Basic styling */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
     body {
-        font-family: Arial, sans-serif;
-        max-width: 1000px;
-        margin: 30px auto;
-        padding: 20px;
-        background-color: #f5f5f5;
+        font-family: 'Inter', sans-serif;
+        min-height: 100vh;
+        overflow-x: hidden;
+        position: relative;
     }
 
-    h1 {
-        color: #333;
+    /* Soft gradient background */
+    .gradient-bg {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        background: linear-gradient(-45deg, #fbc2eb, #a6c1ee, #ffecd2, #fcb69f);
+        background-size: 400% 400%;
+        animation: gradientShift 15s ease infinite;
+    }
+
+    @keyframes gradientShift {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 40px 20px;
+    }
+
+    /* Header */
+    .header {
         text-align: center;
+        margin-bottom: 60px;
+        opacity: 0;
+        animation: fadeInDown 0.8s ease forwards;
     }
 
-    h2 {
-        color: #555;
-        border-bottom: 2px solid #FF5722;
-        padding-bottom: 10px;
+    .header h1 {
+        font-size: 3rem;
+        font-weight: 700;
+        color: white;
+        text-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        margin-bottom: 10px;
     }
 
-    /* Navigation buttons */
-    .nav-buttons {
+    .header p {
+        font-size: 1.2rem;
+        color: rgba(255,255,255,0.9);
+        font-weight: 300;
+    }
+
+    /* Navigation */
+    .nav-container {
         display: flex;
-        gap: 10px;
         justify-content: center;
-        margin-bottom: 20px;
+        gap: 15px;
+        margin-bottom: 40px;
+        opacity: 0;
+        animation: fadeInDown 0.8s ease 0.2s forwards;
     }
 
     .nav-btn {
-        padding: 12px 24px;
+        padding: 15px 30px;
         border: none;
-        border-radius: 5px;
-        font-size: 16px;
-        font-weight: bold;
+        border-radius: 50px;
+        font-size: 1rem;
+        font-weight: 600;
         cursor: pointer;
         text-decoration: none;
-        display: inline-block;
-    }
-
-    .nav-btn-nutrition {
-        background-color: #4CAF50;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        backdrop-filter: blur(10px);
+        background: rgba(255, 255, 255, 0.15);
         color: white;
+        border: 1px solid rgba(255, 255, 255, 0.2);
     }
 
-    .nav-btn-gym {
-        background-color: #FF5722;
+    .nav-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        background: rgba(255, 255, 255, 0.25);
+    }
+
+    .nav-btn.active {
+        background: rgba(255, 255, 255, 0.3);
+    }
+
+    /* Glass Card */
+    .glass-card {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(20px);
+        border-radius: 30px;
+        padding: 40px;
+        margin-bottom: 30px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        opacity: 0;
+        animation: fadeInUp 0.8s ease forwards;
+    }
+
+    .glass-card:nth-child(3) { animation-delay: 0.1s; }
+    .glass-card:nth-child(4) { animation-delay: 0.2s; }
+
+    .section-title {
         color: white;
+        font-size: 1.5rem;
+        margin-bottom: 25px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 12px;
     }
 
-    .nav-btn-settings {
-        background-color: #666;
-        color: white;
+    /* Form */
+    .form-grid {
+        display: grid;
+        gap: 20px;
     }
 
-    /* Container sections */
-    .section {
-        background-color: white;
-        padding: 20px;
-        margin: 20px 0;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-
-    /* Form styling */
     .form-group {
-        margin-bottom: 15px;
+        margin-bottom: 0;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
     }
 
     label {
         display: block;
-        margin-bottom: 5px;
-        color: #555;
-        font-weight: bold;
+        margin-bottom: 8px;
+        color: rgba(255, 255, 255, 0.9);
+        font-weight: 500;
+        font-size: 0.95rem;
     }
 
     input, select, textarea {
         width: 100%;
-        padding: 12px;
-        font-size: 16px;
-        border: 1px solid #ddd;
-        border-radius: 5px;
-        box-sizing: border-box;
+        padding: 14px 18px;
+        border-radius: 15px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(10px);
+        color: white;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    input::placeholder, select::placeholder, textarea::placeholder {
+        color: rgba(255, 255, 255, 0.5);
+    }
+
+    input:focus, select:focus, textarea:focus {
+        outline: none;
+        border-color: rgba(255, 255, 255, 0.4);
+        background: rgba(255, 255, 255, 0.2);
+        box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
     }
 
     textarea {
         resize: vertical;
-        min-height: 60px;
-    }
-
-    /* Form row for multiple inputs */
-    .form-row {
-        display: flex;
-        gap: 15px;
-    }
-
-    .form-row .form-group {
-        flex: 1;
+        min-height: 80px;
+        font-family: inherit;
     }
 
     /* Buttons */
-    button {
-        background-color: #FF5722;
-        color: white;
+    .btn {
+        padding: 16px 32px;
         border: none;
+        border-radius: 50px;
+        font-size: 1.05rem;
+        font-weight: 600;
         cursor: pointer;
-        font-weight: bold;
-        transition: background-color 0.3s;
-        padding: 12px;
-        font-size: 16px;
-        border-radius: 5px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         width: 100%;
+        margin-top: 10px;
     }
 
-    button:hover {
-        background-color: #E64A19;
+    .btn-primary {
+        background: linear-gradient(135deg, #a8caba 0%, #c9b6e4 100%);
+        color: white;
+        box-shadow: 0 4px 15px rgba(168, 202, 186, 0.4);
     }
 
-    .clear-btn {
-        background-color: #f44336;
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(168, 202, 186, 0.6);
+    }
+
+    .btn-danger {
+        background: linear-gradient(135deg, #fbc2eb 0%, #f5b2c8 100%);
+        color: white;
+        box-shadow: 0 4px 15px rgba(251, 194, 235, 0.4);
+    }
+
+    .btn-danger:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(251, 194, 235, 0.6);
+    }
+
+    /* Workout Items */
+    .workouts-container {
+        display: grid;
+        gap: 15px;
         margin-top: 20px;
     }
 
-    .clear-btn:hover {
-        background-color: #da190b;
-    }
-
-    /* Workout item display */
     .workout-item {
-        border-left: 4px solid #FF5722;
-        padding: 15px;
-        margin: 10px 0;
-        background-color: #f9f9f9;
-        border-radius: 5px;
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        transition: all 0.3s ease;
     }
 
-    .workout-item strong {
-        color: #FF5722;
-        font-size: 18px;
+    .workout-item:hover {
+        transform: translateX(5px);
+        background: rgba(255, 255, 255, 0.2);
     }
 
-    .workout-details {
-        margin-top: 5px;
-        color: #666;
+    .workout-name {
+        color: white;
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 10px;
     }
 
-    .last-time {
-        background-color: #FFF3E0;
-        padding: 8px;
-        border-radius: 5px;
-        margin-top: 8px;
-        font-size: 14px;
-        color: #E65100;
+    .workout-stats {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 1rem;
+        margin-bottom: 8px;
+    }
+
+    .workout-notes {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.9rem;
+        font-style: italic;
+        margin-top: 10px;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: rgba(255, 255, 255, 0.7);
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 20px;
+        opacity: 0.5;
+    }
+
+    .empty-state p {
+        font-size: 1.1rem;
+    }
+
+    /* Animations */
+    @keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .header h1 {
+            font-size: 2rem;
+        }
+
+        .glass-card {
+            padding: 25px;
+        }
+
+        .nav-container {
+            flex-wrap: wrap;
+        }
+
+        .form-row {
+            grid-template-columns: 1fr;
+        }
     }
   </style>
 </head>
 <body>
-<h1>💪 Gym Progress Tracker</h1>
+<div class="gradient-bg"></div>
 
-<!-- Navigation -->
-<div class="nav-buttons">
-  <a href="/" class="nav-btn nav-btn-nutrition">🍽️ Nutrition Tracker</a>
-  <a href="/gym" class="nav-btn nav-btn-gym">💪 Gym Tracker</a>
-  <a href="/settings" class="nav-btn nav-btn-settings">⚙️ Settings</a>
-</div>
+<div class="container">
+  <!-- Header -->
+  <div class="header">
+    <h1>Workout Tracker</h1>
+    <p>Track your strength journey</p>
+  </div>
 
-<!-- Log Workout Section -->
-<div class="section">
-  <h2>📝 Log Your Workout</h2>
+  <!-- Navigation -->
+  <div class="nav-container">
+    <a href="/" class="nav-btn">
+      <i class="fas fa-utensils"></i> Nutrition
+    </a>
+    <a href="/gym" class="nav-btn active">
+      <i class="fas fa-dumbbell"></i> Workout
+    </a>
+    <a href="/settings" class="nav-btn">
+      <i class="fas fa-cog"></i> Settings
+    </a>
+  </div>
 
-  <form action="/add_workout" method="POST">
-    <div class="form-group">
-      <label>Exercise Name:</label>
-      <input type="text" name="exercise" placeholder="e.g., Bench Press, Squats, Deadlift" required>
-    </div>
+  <!-- Log Workout -->
+  <div class="glass-card">
+    <h2 class="section-title">
+      <i class="fas fa-plus-circle"></i> Log Your Workout
+    </h2>
 
-    <div class="form-row">
-      <div class="form-group">
-        <label>Weight (lbs):</label>
-        <input type="number" step="0.1" name="weight" placeholder="e.g., 135" required>
+    <form action="/add_workout" method="POST">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Exercise Name</label>
+          <input type="text" name="exercise" placeholder="e.g., Bench Press, Squats, Deadlift" required>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Weight (lbs)</label>
+            <input type="number" step="0.1" name="weight" placeholder="135" required>
+          </div>
+
+          <div class="form-group">
+            <label>Reps</label>
+            <input type="number" name="reps" placeholder="10" required>
+          </div>
+
+          <div class="form-group">
+            <label>Sets</label>
+            <input type="number" name="sets" placeholder="3" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Notes (optional)</label>
+          <textarea name="notes" placeholder="How did it feel? Any observations?"></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+          <i class="fas fa-dumbbell"></i> Log Workout
+        </button>
       </div>
+    </form>
+  </div>
 
-      <div class="form-group">
-        <label>Reps:</label>
-        <input type="number" name="reps" placeholder="e.g., 10" required>
+  <!-- Today's Workouts -->
+  <div class="glass-card">
+    <h2 class="section-title">
+      <i class="fas fa-list-check"></i> Today's Workouts
+    </h2>
+
+    {% if workouts %}
+    <div class="workouts-container">
+      {% for workout in workouts %}
+      <div class="workout-item">
+        <div class="workout-name">
+          <i class="fas fa-fire"></i> {{ workout.exercise }}
+        </div>
+        <div class="workout-stats">
+          <i class="fas fa-weight-hanging"></i> {{ workout.weight }} lbs ×
+          <i class="fas fa-redo"></i> {{ workout.reps }} reps ×
+          <i class="fas fa-layer-group"></i> {{ workout.sets }} sets
+        </div>
+        {% if workout.notes %}
+        <div class="workout-notes">
+          <i class="fas fa-comment"></i> {{ workout.notes }}
+        </div>
+        {% endif %}
       </div>
-
-      <div class="form-group">
-        <label>Sets:</label>
-        <input type="number" name="sets" placeholder="e.g., 3" required>
-      </div>
+      {% endfor %}
     </div>
 
-    <div class="form-group">
-      <label>Notes (optional):</label>
-      <textarea name="notes" placeholder="e.g., Felt strong today, Good form"></textarea>
-    </div>
-
-    <button type="submit">Add Exercise</button>
-  </form>
-</div>
-
-<!-- Today's Workouts -->
-<div class="section">
-  <h2>📋 Today's Workouts</h2>
-
-  {% if workouts %}
-  {% for workout in workouts %}
-  <div class="workout-item">
-    <strong>{{ workout.exercise }}</strong>
-    <div class="workout-details">
-      {{ workout.weight }} lbs × {{ workout.reps }} reps × {{ workout.sets }} sets
-    </div>
-    {% if workout.notes %}
-    <div class="workout-details">
-      <em>Note: {{ workout.notes }}</em>
+    <form action="/clear_workouts" method="GET" style="margin-top: 25px;">
+      <button type="submit" class="btn btn-danger" onclick="return confirm('Clear all workouts for today?')">
+        <i class="fas fa-trash-alt"></i> Clear All Workouts
+      </button>
+    </form>
+    {% else %}
+    <div class="empty-state">
+      <i class="fas fa-dumbbell"></i>
+      <p>No workouts logged yet. Let's get moving!</p>
     </div>
     {% endif %}
   </div>
-  {% endfor %}
-
-  <!-- Clear workouts button -->
-  <form action="/clear_workouts" method="GET">
-    <button type="submit" class="clear-btn" onclick="return confirm('Clear all workouts for today?')">Clear Today's Workouts</button>
-  </form>
-  {% else %}
-  <p style="text-align: center; color: #999; padding: 30px;">No workouts logged yet! Start lifting! 💪</p>
-  {% endif %}
 </div>
 </body>
 </html>

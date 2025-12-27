@@ -1,353 +1,678 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Protein & Calorie Tracker</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NutriTrack - Your Wellness Journey</title>
     <link rel="stylesheet" href="{{ url_for('static', filename=theme + '_theme.css') }}">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome for better icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <style>
-        /* Basic styling for the entire page */
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 1000px;
-            margin: 30px auto;
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
-        
-        /* Main heading */
-        h1 {
-            color: #333;
-            text-align: center;
-        }
-        
-        h2 {
-            color: #555;
-            border-bottom: 2px solid #4CAF50;
-            padding-bottom: 10px;
-        }
-        
-        /* Daily totals section - highlighted box */
-        .totals {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 25px;
-            margin: 20px 0;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        
-        .totals h2 {
-            color: white;
-            border-bottom: 2px solid white;
-            margin-top: 0;
-        }
-        
-        .totals p {
-            font-size: 20px;
-            margin: 10px 0;
-        }
-        
-        /* Container for different input sections */
-        .section {
-            background-color: white;
-            padding: 20px;
-            margin: 20px 0;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        
-        /* Form elements styling */
-        input, select, button {
-            padding: 12px;
-            margin: 8px 0;
-            font-size: 16px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
+        * {
+            margin: 0;
+            padding: 0;
             box-sizing: border-box;
         }
-        
-        /* Make inputs and selects full width by default */
-        input[type="text"],
-        input[type="number"],
-        select {
-            width: 100%;
+
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
         }
-        
-        /* Button styling */
-        button {
-            background-color: #4CAF50;
+
+        /* Soft animated gradient background */
+        .gradient-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: linear-gradient(-45deg, #fbc2eb, #a6c1ee, #ffecd2, #fcb69f);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 60px;
+            opacity: 0;
+            animation: fadeInDown 0.8s ease forwards;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 700;
             color: white;
+            text-shadow: 0 2px 20px rgba(0,0,0,0.1);
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            color: rgba(255,255,255,0.9);
+            font-weight: 300;
+        }
+
+        /* Navigation */
+        .nav-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 40px;
+            opacity: 0;
+            animation: fadeInDown 0.8s ease 0.2s forwards;
+        }
+
+        .nav-btn {
+            padding: 15px 30px;
             border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
             cursor: pointer;
-            font-weight: bold;
-            transition: background-color 0.3s;
-            width: 100%;
-        }
-        
-        button:hover {
-            background-color: #45a049;
-        }
-        
-        /* Clear button - different color */
-        .clear-btn {
-            background-color: #f44336;
-            margin-top: 20px;
-        }
-        
-        .clear-btn:hover {
-            background-color: #da190b;
-        }
-        
-        /* Individual meal item display */
-        .meal-item {
-            border-left: 4px solid #4CAF50;
-            padding: 15px;
-            margin: 10px 0;
-            background-color: #f9f9f9;
-            border-radius: 5px;
-        }
-        
-        .meal-item strong {
-            color: #4CAF50;
-        }
-        
-        /* Meal time badge */
-        .meal-time {
-            display: inline-block;
-            background-color: #4CAF50;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.15);
             color: white;
-            padding: 5px 10px;
-            border-radius: 15px;
-            font-size: 12px;
-            margin-right: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
-        
-        /* Form groups for better organization */
+
+        .nav-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .nav-btn.active {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Glass Card */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            padding: 40px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            opacity: 0;
+            animation: fadeInUp 0.8s ease forwards;
+        }
+
+        .glass-card:nth-child(2) { animation-delay: 0.1s; }
+        .glass-card:nth-child(3) { animation-delay: 0.2s; }
+        .glass-card:nth-child(4) { animation-delay: 0.3s; }
+        .glass-card:nth-child(5) { animation-delay: 0.4s; }
+
+        /* Progress Section */
+        .progress-section {
+            text-align: center;
+        }
+
+        .progress-section h2 {
+            color: white;
+            font-size: 2rem;
+            margin-bottom: 40px;
+            font-weight: 600;
+        }
+
+        .progress-circles {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 40px;
+            margin-top: 30px;
+        }
+
+        .progress-circle-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        /* Circular Progress */
+        .circular-progress {
+            position: relative;
+            width: 180px;
+            height: 180px;
+        }
+
+        .circular-progress svg {
+            transform: rotate(-90deg);
+        }
+
+        .progress-bg {
+            fill: none;
+            stroke: rgba(255, 255, 255, 0.1);
+            stroke-width: 12;
+        }
+
+        .progress-bar {
+            fill: none;
+            stroke-width: 12;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 1s ease;
+        }
+
+        .progress-bar.protein {
+            stroke: url(#proteinGradient);
+        }
+
+        .progress-bar.calories {
+            stroke: url(#caloriesGradient);
+        }
+
+        .progress-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        .progress-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: white;
+            display: block;
+        }
+
+        .progress-label {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.8);
+            display: block;
+        }
+
+        .progress-stats {
+            color: white;
+            text-align: center;
+        }
+
+        .progress-stats h3 {
+            font-size: 1.2rem;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .progress-stats p {
+            font-size: 0.95rem;
+            opacity: 0.9;
+        }
+
+        /* Form Sections */
+        .section-title {
+            color: white;
+            font-size: 1.5rem;
+            margin-bottom: 25px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .form-grid {
+            display: grid;
+            gap: 20px;
+        }
+
         .form-group {
-            margin-bottom: 15px;
+            margin-bottom: 0;
         }
-        
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
         label {
             display: block;
-            margin-bottom: 5px;
-            color: #555;
-            font-weight: bold;
+            margin-bottom: 8px;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 500;
+            font-size: 0.95rem;
         }
-        
-        /* Quantity and unit on same row */
-        .quantity-unit-row {
-            display: flex;
-            gap: 10px;
+
+        input, select, textarea {
+            width: 100%;
+            padding: 14px 18px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s ease;
         }
-        
-        .quantity-unit-row .form-group {
-            flex: 1;
+
+        input::placeholder, select::placeholder, textarea::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+        }
+
+        select {
+            cursor: pointer;
+        }
+
+        /* Buttons - Soft colors */
+        .btn {
+            padding: 16px 32px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.05rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #a8caba 0%, #c9b6e4 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(168, 202, 186, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(168, 202, 186, 0.6);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #fbc2eb 0%, #f5b2c8 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(251, 194, 235, 0.4);
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(251, 194, 235, 0.6);
+        }
+
+        /* Meal Items */
+        .meals-container {
+            display: grid;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .meal-item {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .meal-item:hover {
+            transform: translateX(5px);
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .meal-time {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .meal-name {
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .meal-stats {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.95rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-state p {
+            font-size: 1.1rem;
+        }
+
+        /* Animations */
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .glass-card {
+                padding: 25px;
+            }
+
+            .nav-container {
+                flex-wrap: wrap;
+            }
+
+            .progress-circles {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
-<h1>🍽️ Protein & Calorie Tracker</h1>
+<!-- Animated Background -->
+<div class="gradient-bg"></div>
 
-<!-- Navigation Buttons -->
-<div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 20px;">
-    <a href="/" style="text-decoration: none;">
-        <button style="padding: 12px 24px; background-color: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; font-weight: bold;">
-            🍽️ Nutrition Tracker
-        </button>
-    </a>
-    <a href="/gym" style="text-decoration: none;">
-        <button style="padding: 12px 24px; background-color: #FF5722; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; font-weight: bold;">
-            💪 Gym Tracker
-        </button>
-    </a>
-    <a href="/settings" style="text-decoration: none;">
-        <button style="padding: 12px 24px; background-color: #666; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; font-weight: bold;">
-            ⚙️ Settings
-        </button>
-    </a>
-</div>
+<div class="container">
+    <!-- Header -->
+    <div class="header">
+        <h1>NutriTrack</h1>
+        <p>Your personalized wellness journey</p>
+    </div>
 
-<!-- Daily totals display with progress bars -->
-<div class="totals">
-    <h2>Today's Progress</h2>
-    
-    <!-- Protein Progress -->
-    <div style="margin-bottom: 20px;">
-        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-            <span><strong>Protein:</strong> {{ "%.1f"|format(proteinTotal) }}g / {{ protein_goal }}g</span>
-            <span><strong>{{ "%.0f"|format(protein_percentage) }}%</strong></span>
-        </div>
-        <div style="background-color: rgba(255,255,255,0.3); border-radius: 10px; height: 25px; overflow: hidden;">
-            <div style="background-color: {% if protein_percentage >= 100 %}#4CAF50{% elif protein_percentage >= 70 %}#FFC107{% else %}#FF5722{% endif %}; 
-                        height: 100%; 
-                        width: {{ protein_percentage if protein_percentage <= 100 else 100 }}%; 
-                        border-radius: 10px;
-                        transition: width 0.3s ease;">
+    <!-- Navigation -->
+    <div class="nav-container">
+        <a href="/" class="nav-btn active">
+            <i class="fas fa-utensils"></i> Nutrition
+        </a>
+        <a href="/gym" class="nav-btn">
+            <i class="fas fa-dumbbell"></i> Workout
+        </a>
+        <a href="/settings" class="nav-btn">
+            <i class="fas fa-cog"></i> Settings
+        </a>
+    </div>
+
+    <!-- Progress Section -->
+    <div class="glass-card progress-section">
+        <h2>Today's Progress</h2>
+
+        <div class="progress-circles">
+            <!-- Protein Circle -->
+            <div class="progress-circle-wrapper">
+                <div class="circular-progress">
+                    <svg width="180" height="180">
+                        <defs>
+                            <linearGradient id="proteinGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#a8caba;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#c9b6e4;stop-opacity:1" />
+                            </linearGradient>
+                        </defs>
+                        <circle class="progress-bg" cx="90" cy="90" r="80"></circle>
+                        <circle class="progress-bar protein" cx="90" cy="90" r="80"
+                                stroke-dasharray="502.4"
+                                stroke-dashoffset="{{ 502.4 - (502.4 * protein_percentage / 100) if protein_percentage <= 100 else 0 }}">
+                        </circle>
+                    </svg>
+                    <div class="progress-text">
+                        <span class="progress-value">{{ "%.0f"|format(protein_percentage) }}%</span>
+                        <span class="progress-label">Protein</span>
+                    </div>
+                </div>
+                <div class="progress-stats">
+                    <h3>{{ "%.1f"|format(proteinTotal) }}g / {{ protein_goal }}g</h3>
+                    <p>Daily Goal</p>
+                </div>
+            </div>
+
+            <!-- Calories Circle -->
+            <div class="progress-circle-wrapper">
+                <div class="circular-progress">
+                    <svg width="180" height="180">
+                        <defs>
+                            <linearGradient id="caloriesGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#fbc2eb;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#f5b2c8;stop-opacity:1" />
+                            </linearGradient>
+                        </defs>
+                        <circle class="progress-bg" cx="90" cy="90" r="80"></circle>
+                        <circle class="progress-bar calories" cx="90" cy="90" r="80"
+                                stroke-dasharray="502.4"
+                                stroke-dashoffset="{{ 502.4 - (502.4 * calorie_percentage / 100) if calorie_percentage <= 100 else 0 }}">
+                        </circle>
+                    </svg>
+                    <div class="progress-text">
+                        <span class="progress-value">{{ "%.0f"|format(calorie_percentage) }}%</span>
+                        <span class="progress-label">Calories</span>
+                    </div>
+                </div>
+                <div class="progress-stats">
+                    <h3>{{ caloriesTotal|int }} / {{ calorie_goal }}</h3>
+                    <p>Daily Goal</p>
+                </div>
             </div>
         </div>
     </div>
-    
-    <!-- Calorie Progress -->
-    <div>
-        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-            <span><strong>Calories:</strong> {{ caloriesTotal|int }} / {{ calorie_goal }} cal</span>
-            <span><strong>{{ "%.0f"|format(calorie_percentage) }}%</strong></span>
-        </div>
-        <div style="background-color: rgba(255,255,255,0.3); border-radius: 10px; height: 25px; overflow: hidden;">
-            <div style="background-color: {% if calorie_percentage >= 100 %}#4CAF50{% elif calorie_percentage >= 70 %}#FFC107{% else %}#FF5722{% endif %}; 
-                        height: 100%; 
-                        width: {{ calorie_percentage if calorie_percentage <= 100 else 100 }}%; 
-                        border-radius: 10px;
-                        transition: width 0.3s ease;">
+
+    <!-- Quick Log from Database -->
+    <div class="glass-card">
+        <h2 class="section-title">
+            <i class="fas fa-book"></i> Quick Log
+        </h2>
+
+        <form action="/add_from_database" method="POST">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Select Food</label>
+                    <select name="food" required>
+                        <option value="">Choose a food...</option>
+                        {% for food_name, food_info in food_database.items() %}
+                        <option value="{{ food_name }}">{{ food_name }} - {{ food_info.protein }}g protein</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Quantity</label>
+                        <input type="number" step="0.1" name="quantity" placeholder="e.g., 2" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Unit</label>
+                        <select name="unit" required>
+                            <option value="">Select unit...</option>
+                            <option value="grams">Grams (g)</option>
+                            <option value="piece">Piece</option>
+                            <option value="cup">Cup</option>
+                            <option value="tbsp">Tablespoon</option>
+                            <option value="tsp">Teaspoon</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Meal Time</label>
+                    <select name="meal_time" required>
+                        <option value="">When did you eat?</option>
+                        <option value="Breakfast">Breakfast</option>
+                        <option value="Mid-morning Snack">Mid-morning Snack</option>
+                        <option value="Lunch">Lunch</option>
+                        <option value="Afternoon Snack">Afternoon Snack</option>
+                        <option value="Pre-workout">Pre-workout</option>
+                        <option value="Dinner">Dinner</option>
+                        <option value="Evening Snack">Evening Snack</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-plus-circle"></i> Log Food
+                </button>
             </div>
-        </div>
+        </form>
     </div>
-</div>
 
-<!-- Add from Database Section -->
-<div class="section">
-    <h2>🥘 Log Food from Database</h2>
-    <p style="color: #666; font-size: 14px;">Select a food from your database</p>
-    
-    <form action="/add_from_database" method="POST">
-        <div class="form-group">
-            <label>Select Food:</label>
-            <select name="food" required>
-                <option value="">-- Choose a food --</option>
-                {% for food_name, food_info in food_database.items() %}
-                    <option value="{{ food_name }}">{{ food_name }} ({{ food_info.protein }}g protein, {{ food_info.calories }} cal per {{ food_info.base_Unit }})</option>
-                {% endfor %}
-            </select>
-        </div>
-        
-        <!-- Quantity and Unit on same row -->
-        <div class="quantity-unit-row">
-            <div class="form-group">
-                <label>Quantity:</label>
-                <input type="number" step="0.1" name="quantity" placeholder="e.g., 2" required>
-            </div>
-            
-            <div class="form-group">
-                <label>Unit:</label>
-                <select name="unit" required>
-                    <option value="">-- Select unit --</option>
-                    <option value="grams">Grams (g)</option>
-                    <option value="piece">Piece</option>
-                    <option value="cup">Cup</option>
-                    <option value="tbsp">Tablespoon</option>
-                    <option value="tsp">Teaspoon</option>
-                </select>
-            </div>
-        </div>
-        
-        <div class="form-group">
-            <label>Meal Time:</label>
-            <select name="meal_time" required>
-                <option value="">-- Select time --</option>
-                <option value="Breakfast">Breakfast</option>
-                <option value="Mid-morning Snack">Mid-morning Snack</option>
-                <option value="Lunch">Lunch</option>
-                <option value="Afternoon Snack">Afternoon Snack</option>
-                <option value="Pre-workout">Pre-workout</option>
-                <option value="Dinner">Dinner</option>
-                <option value="Evening Snack">Evening Snack</option>
-            </select>
-        </div>
-        
-        <button type="submit">Add Food</button>
-    </form>
-</div>
+    <!-- Custom Food Entry -->
+    <div class="glass-card">
+        <h2 class="section-title">
+            <i class="fas fa-edit"></i> Add Custom Food
+        </h2>
 
-<!-- Custom Food Entry Section -->
-<div class="section">
-    <h2>➕ Add Custom Food</h2>
-    <p style="color: #666; font-size: 14px;">Food not in the database? Add it manually</p>
-    
-    <form action="/add_custom" method="POST">
-        <div class="form-group">
-            <label>Food Name:</label>
-            <input type="text" name="food" placeholder="e.g., Chicken Biryani" required>
-        </div>
-        
-        <!-- Quantity and Unit on same row -->
-        <div class="quantity-unit-row">
-            <div class="form-group">
-                <label>Quantity:</label>
-                <input type="number" step="0.1" name="quantity" placeholder="e.g., 1" required>
-            </div>
-            
-            <div class="form-group">
-                <label>Unit:</label>
-                <select name="unit" required>
-                    <option value="">-- Select unit --</option>
-                    <option value="plate">Plate</option>
-                    <option value="bowl">Bowl</option>
-                    <option value="grams">Grams (g)</option>
-                    <option value="piece">Piece</option>
-                    <option value="cup">Cup</option>
-                    <option value="tbsp">Tablespoon</option>
-                    <option value="tsp">Teaspoon</option>
-                </select>
-            </div>
-        </div>
-        
-        <div class="form-group">
-            <label>Protein per unit (grams):</label>
-            <input type="number" step="0.1" name="protein" placeholder="e.g., 25" required>
-        </div>
-        
-        <div class="form-group">
-            <label>Calories per unit:</label>
-            <input type="number" step="0.1" name="calories" placeholder="e.g., 350" required>
-        </div>
-        
-        <div class="form-group">
-            <label>Meal Time:</label>
-            <select name="meal_time" required>
-                <option value="">-- Select time --</option>
-                <option value="Breakfast">Breakfast</option>
-                <option value="Mid-morning Snack">Mid-morning Snack</option>
-                <option value="Lunch">Lunch</option>
-                <option value="Afternoon Snack">Afternoon Snack</option>
-                <option value="Pre-workout">Pre-workout</option>
-                <option value="Dinner">Dinner</option>
-                <option value="Evening Snack">Evening Snack</option>
-            </select>
-        </div>
-        
-        <button type="submit">Add Custom Food</button>
-    </form>
-</div>
+        <form action="/add_custom" method="POST">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Food Name</label>
+                    <input type="text" name="food" placeholder="e.g., Homemade Pasta" required>
+                </div>
 
-<!-- Logged Meals Display -->
-<div class="section">
-    <h2>📋 Today's Meals</h2>
-    
-    {% if meals %}
-        {% for meal in meals %}
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Quantity</label>
+                        <input type="number" step="0.1" name="quantity" placeholder="1" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Unit</label>
+                        <select name="unit" required>
+                            <option value="">Select...</option>
+                            <option value="plate">Plate</option>
+                            <option value="bowl">Bowl</option>
+                            <option value="grams">Grams</option>
+                            <option value="piece">Piece</option>
+                            <option value="cup">Cup</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Protein (g)</label>
+                        <input type="number" step="0.1" name="protein" placeholder="25" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Calories</label>
+                        <input type="number" step="0.1" name="calories" placeholder="350" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Meal Time</label>
+                    <select name="meal_time" required>
+                        <option value="">When did you eat?</option>
+                        <option value="Breakfast">Breakfast</option>
+                        <option value="Mid-morning Snack">Mid-morning Snack</option>
+                        <option value="Lunch">Lunch</option>
+                        <option value="Afternoon Snack">Afternoon Snack</option>
+                        <option value="Pre-workout">Pre-workout</option>
+                        <option value="Dinner">Dinner</option>
+                        <option value="Evening Snack">Evening Snack</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-plus-circle"></i> Add Custom Food
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Today's Meals -->
+    <div class="glass-card">
+        <h2 class="section-title">
+            <i class="fas fa-history"></i> Today's Meals
+        </h2>
+
+        {% if meals %}
+        <div class="meals-container">
+            {% for meal in meals %}
             <div class="meal-item">
                 <span class="meal-time">{{ meal.meal_time }}</span>
-                <strong>{{ meal.food }}</strong><br>
-                Protein: {{ "%.1f"|format(meal.protein) }}g | Calories: {{ meal.calories|int }} cal
+                <div class="meal-name">{{ meal.food }}</div>
+                <div class="meal-stats">
+                    <i class="fas fa-drumstick-bite"></i> {{ "%.1f"|format(meal.protein) }}g protein  •
+                    <i class="fas fa-fire"></i> {{ meal.calories|int }} cal
+                </div>
             </div>
-        {% endfor %}
-        
-        <!-- Clear all meals button -->
-        <form action="/clear" method="GET" style="margin-top: 20px;">
-            <button type="submit" class="clear-btn" onclick="return confirm('Clear all meals for today?')">Clear All Meals</button>
+            {% endfor %}
+        </div>
+
+        <form action="/clear" method="GET" style="margin-top: 25px;">
+            <button type="submit" class="btn btn-danger" onclick="return confirm('Clear all meals for today?')">
+                <i class="fas fa-trash-alt"></i> Clear All Meals
+            </button>
         </form>
-    {% else %}
-        <p style="text-align: center; color: #999; padding: 30px;">No meals logged yet! Start tracking above.</p>
-    {% endif %}
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-cookie-bite"></i>
+            <p>No meals logged yet. Start tracking!</p>
+        </div>
+        {% endif %}
+    </div>
 </div>
 
 <!-- Celebration Confetti -->
 {% if goal_reached %}
 <div id="confetti-container"></div>
 <script>
-    // Simple confetti celebration
     function createConfetti() {
-        const colors = ['#FF9EB5', '#C7CEEA', '#B5EAD7', '#FFD3B6', '#FFAAA5'];
-        const confettiCount = 50;
+        const colors = ['#a8caba', '#c9b6e4', '#fbc2eb', '#f5b2c8', '#a6c1ee'];
+        const confettiCount = 100;
         const container = document.getElementById('confetti-container');
 
         container.style.position = 'fixed';
@@ -367,6 +692,7 @@
             confetti.style.left = Math.random() * 100 + '%';
             confetti.style.top = '-10px';
             confetti.style.opacity = Math.random();
+            confetti.style.borderRadius = '50%';
             confetti.style.transform = 'rotate(' + Math.random() * 360 + 'deg)';
             confetti.style.animation = 'confetti-fall ' + (Math.random() * 3 + 2) + 's linear';
 
@@ -376,7 +702,6 @@
         setTimeout(() => container.remove(), 5000);
     }
 
-    // Add CSS animation
     const style = document.createElement('style');
     style.textContent = `
         @keyframes confetti-fall {
@@ -387,15 +712,12 @@
     `;
     document.head.appendChild(style);
 
-    // Trigger confetti
     createConfetti();
 
-    // Show success message
     setTimeout(() => {
-        alert('🎉 Congratulations! You hit your goal today! Keep crushing it! 💪');
+        alert('🎉 Amazing! You crushed your goal today! 💪');
     }, 500);
 </script>
 {% endif %}
-
 </body>
 </html>
