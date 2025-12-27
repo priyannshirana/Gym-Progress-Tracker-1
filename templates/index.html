@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Protein & Calorie Tracker</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename=theme + '_theme.css') }}">
+    <style>
+        /* Basic styling for the entire page */
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 30px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        /* Main heading */
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        
+        h2 {
+            color: #555;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        
+        /* Daily totals section - highlighted box */
+        .totals {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            margin: 20px 0;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .totals h2 {
+            color: white;
+            border-bottom: 2px solid white;
+            margin-top: 0;
+        }
+        
+        .totals p {
+            font-size: 20px;
+            margin: 10px 0;
+        }
+        
+        /* Container for different input sections */
+        .section {
+            background-color: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        /* Form elements styling */
+        input, select, button {
+            padding: 12px;
+            margin: 8px 0;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        
+        /* Make inputs and selects full width by default */
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 100%;
+        }
+        
+        /* Button styling */
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+            width: 100%;
+        }
+        
+        button:hover {
+            background-color: #45a049;
+        }
+        
+        /* Clear button - different color */
+        .clear-btn {
+            background-color: #f44336;
+            margin-top: 20px;
+        }
+        
+        .clear-btn:hover {
+            background-color: #da190b;
+        }
+        
+        /* Individual meal item display */
+        .meal-item {
+            border-left: 4px solid #4CAF50;
+            padding: 15px;
+            margin: 10px 0;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+        }
+        
+        .meal-item strong {
+            color: #4CAF50;
+        }
+        
+        /* Meal time badge */
+        .meal-time {
+            display: inline-block;
+            background-color: #4CAF50;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            margin-right: 10px;
+        }
+        
+        /* Form groups for better organization */
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: bold;
+        }
+        
+        /* Quantity and unit on same row */
+        .quantity-unit-row {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .quantity-unit-row .form-group {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+<h1>🍽️ Protein & Calorie Tracker</h1>
+
+<!-- Navigation Buttons -->
+<div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 20px;">
+    <a href="/" style="text-decoration: none;">
+        <button style="padding: 12px 24px; background-color: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; font-weight: bold;">
+            🍽️ Nutrition Tracker
+        </button>
+    </a>
+    <a href="/gym" style="text-decoration: none;">
+        <button style="padding: 12px 24px; background-color: #FF5722; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; font-weight: bold;">
+            💪 Gym Tracker
+        </button>
+    </a>
+    <a href="/settings" style="text-decoration: none;">
+        <button style="padding: 12px 24px; background-color: #666; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; font-weight: bold;">
+            ⚙️ Settings
+        </button>
+    </a>
+</div>
+
+<!-- Daily totals display with progress bars -->
+<div class="totals">
+    <h2>Today's Progress</h2>
+    
+    <!-- Protein Progress -->
+    <div style="margin-bottom: 20px;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+            <span><strong>Protein:</strong> {{ "%.1f"|format(proteinTotal) }}g / {{ protein_goal }}g</span>
+            <span><strong>{{ "%.0f"|format(protein_percentage) }}%</strong></span>
+        </div>
+        <div style="background-color: rgba(255,255,255,0.3); border-radius: 10px; height: 25px; overflow: hidden;">
+            <div style="background-color: {% if protein_percentage >= 100 %}#4CAF50{% elif protein_percentage >= 70 %}#FFC107{% else %}#FF5722{% endif %}; 
+                        height: 100%; 
+                        width: {{ protein_percentage if protein_percentage <= 100 else 100 }}%; 
+                        border-radius: 10px;
+                        transition: width 0.3s ease;">
+            </div>
+        </div>
+    </div>
+    
+    <!-- Calorie Progress -->
+    <div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+            <span><strong>Calories:</strong> {{ caloriesTotal|int }} / {{ calorie_goal }} cal</span>
+            <span><strong>{{ "%.0f"|format(calorie_percentage) }}%</strong></span>
+        </div>
+        <div style="background-color: rgba(255,255,255,0.3); border-radius: 10px; height: 25px; overflow: hidden;">
+            <div style="background-color: {% if calorie_percentage >= 100 %}#4CAF50{% elif calorie_percentage >= 70 %}#FFC107{% else %}#FF5722{% endif %}; 
+                        height: 100%; 
+                        width: {{ calorie_percentage if calorie_percentage <= 100 else 100 }}%; 
+                        border-radius: 10px;
+                        transition: width 0.3s ease;">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add from Database Section -->
+<div class="section">
+    <h2>🥘 Log Food from Database</h2>
+    <p style="color: #666; font-size: 14px;">Select a food from your database</p>
+    
+    <form action="/add_from_database" method="POST">
+        <div class="form-group">
+            <label>Select Food:</label>
+            <select name="food" required>
+                <option value="">-- Choose a food --</option>
+                {% for food_name, food_info in food_database.items() %}
+                    <option value="{{ food_name }}">{{ food_name }} ({{ food_info.protein }}g protein, {{ food_info.calories }} cal per {{ food_info.base_Unit }})</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <!-- Quantity and Unit on same row -->
+        <div class="quantity-unit-row">
+            <div class="form-group">
+                <label>Quantity:</label>
+                <input type="number" step="0.1" name="quantity" placeholder="e.g., 2" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Unit:</label>
+                <select name="unit" required>
+                    <option value="">-- Select unit --</option>
+                    <option value="grams">Grams (g)</option>
+                    <option value="piece">Piece</option>
+                    <option value="cup">Cup</option>
+                    <option value="tbsp">Tablespoon</option>
+                    <option value="tsp">Teaspoon</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label>Meal Time:</label>
+            <select name="meal_time" required>
+                <option value="">-- Select time --</option>
+                <option value="Breakfast">Breakfast</option>
+                <option value="Mid-morning Snack">Mid-morning Snack</option>
+                <option value="Lunch">Lunch</option>
+                <option value="Afternoon Snack">Afternoon Snack</option>
+                <option value="Pre-workout">Pre-workout</option>
+                <option value="Dinner">Dinner</option>
+                <option value="Evening Snack">Evening Snack</option>
+            </select>
+        </div>
+        
+        <button type="submit">Add Food</button>
+    </form>
+</div>
+
+<!-- Custom Food Entry Section -->
+<div class="section">
+    <h2>➕ Add Custom Food</h2>
+    <p style="color: #666; font-size: 14px;">Food not in the database? Add it manually</p>
+    
+    <form action="/add_custom" method="POST">
+        <div class="form-group">
+            <label>Food Name:</label>
+            <input type="text" name="food" placeholder="e.g., Chicken Biryani" required>
+        </div>
+        
+        <!-- Quantity and Unit on same row -->
+        <div class="quantity-unit-row">
+            <div class="form-group">
+                <label>Quantity:</label>
+                <input type="number" step="0.1" name="quantity" placeholder="e.g., 1" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Unit:</label>
+                <select name="unit" required>
+                    <option value="">-- Select unit --</option>
+                    <option value="plate">Plate</option>
+                    <option value="bowl">Bowl</option>
+                    <option value="grams">Grams (g)</option>
+                    <option value="piece">Piece</option>
+                    <option value="cup">Cup</option>
+                    <option value="tbsp">Tablespoon</option>
+                    <option value="tsp">Teaspoon</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label>Protein per unit (grams):</label>
+            <input type="number" step="0.1" name="protein" placeholder="e.g., 25" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Calories per unit:</label>
+            <input type="number" step="0.1" name="calories" placeholder="e.g., 350" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Meal Time:</label>
+            <select name="meal_time" required>
+                <option value="">-- Select time --</option>
+                <option value="Breakfast">Breakfast</option>
+                <option value="Mid-morning Snack">Mid-morning Snack</option>
+                <option value="Lunch">Lunch</option>
+                <option value="Afternoon Snack">Afternoon Snack</option>
+                <option value="Pre-workout">Pre-workout</option>
+                <option value="Dinner">Dinner</option>
+                <option value="Evening Snack">Evening Snack</option>
+            </select>
+        </div>
+        
+        <button type="submit">Add Custom Food</button>
+    </form>
+</div>
+
+<!-- Logged Meals Display -->
+<div class="section">
+    <h2>📋 Today's Meals</h2>
+    
+    {% if meals %}
+        {% for meal in meals %}
+            <div class="meal-item">
+                <span class="meal-time">{{ meal.meal_time }}</span>
+                <strong>{{ meal.food }}</strong><br>
+                Protein: {{ "%.1f"|format(meal.protein) }}g | Calories: {{ meal.calories|int }} cal
+            </div>
+        {% endfor %}
+        
+        <!-- Clear all meals button -->
+        <form action="/clear" method="GET" style="margin-top: 20px;">
+            <button type="submit" class="clear-btn" onclick="return confirm('Clear all meals for today?')">Clear All Meals</button>
+        </form>
+    {% else %}
+        <p style="text-align: center; color: #999; padding: 30px;">No meals logged yet! Start tracking above.</p>
+    {% endif %}
+</div>
+
+<!-- Celebration Confetti -->
+{% if goal_reached %}
+<div id="confetti-container"></div>
+<script>
+    // Simple confetti celebration
+    function createConfetti() {
+        const colors = ['#FF9EB5', '#C7CEEA', '#B5EAD7', '#FFD3B6', '#FFAAA5'];
+        const confettiCount = 50;
+        const container = document.getElementById('confetti-container');
+
+        container.style.position = 'fixed';
+        container.style.top = '0';
+        container.style.left = '0';
+        container.style.width = '100%';
+        container.style.height = '100%';
+        container.style.pointerEvents = 'none';
+        container.style.zIndex = '9999';
+
+        for (let i = 0; i < confettiCount; i++) {
+            const confetti = document.createElement('div');
+            confetti.style.position = 'absolute';
+            confetti.style.width = '10px';
+            confetti.style.height = '10px';
+            confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+            confetti.style.left = Math.random() * 100 + '%';
+            confetti.style.top = '-10px';
+            confetti.style.opacity = Math.random();
+            confetti.style.transform = 'rotate(' + Math.random() * 360 + 'deg)';
+            confetti.style.animation = 'confetti-fall ' + (Math.random() * 3 + 2) + 's linear';
+
+            container.appendChild(confetti);
+        }
+
+        setTimeout(() => container.remove(), 5000);
+    }
+
+    // Add CSS animation
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes confetti-fall {
+            to {
+                transform: translateY(100vh) rotate(720deg);
+            }
+        }
+    `;
+    document.head.appendChild(style);
+
+    // Trigger confetti
+    createConfetti();
+
+    // Show success message
+    setTimeout(() => {
+        alert('🎉 Congratulations! You hit your goal today! Keep crushing it! 💪');
+    }, 500);
+</script>
+{% endif %}
+
+</body>
+</html>

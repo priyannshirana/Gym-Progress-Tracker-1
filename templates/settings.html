@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Settings - Tracker</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename=theme + '_theme.css') }}">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+
+        h1 {
+            color: var(--text-dark);
+            text-align: center;
+        }
+
+        .settings-container {
+            background-color: var(--card-bg);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            color: white;
+            border: none;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .back-btn {
+            background: var(--text-light);
+            margin-top: 10px;
+        }
+
+        .hint {
+            font-size: 14px;
+            color: var(--text-light);
+            margin-top: 5px;
+        }
+
+        .theme-preview {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .theme-option {
+            flex: 1;
+            padding: 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .theme-option.soft {
+            background: linear-gradient(135deg, #FFB6C1 0%, #DDA0DD 100%);
+        }
+
+        .theme-option.minimal {
+            background: linear-gradient(135deg, #1a1f3a 0%, #2d3561 100%);
+            color: white;
+        }
+
+        .theme-option.selected {
+            border-color: var(--primary);
+            transform: scale(1.05);
+        }
+
+        .theme-option:hover {
+            transform: scale(1.02);
+        }
+    </style>
+</head>
+<body>
+<h1>⚙️ Settings</h1>
+
+<div class="settings-container">
+
+    <!-- Theme Selection -->
+    <h2>🎨 Theme</h2>
+    <form action="/update_theme" method="POST">
+        <div class="form-group">
+            <label>Choose Your Theme:</label>
+            <div class="theme-preview">
+                <div class="theme-option soft {% if theme == 'soft' %}selected{% endif %}" onclick="selectTheme('soft')">
+                    <h3>✨ Soft & Cozy</h3>
+                    <p style="font-size: 12px;">Pastel colors, playful vibes</p>
+                </div>
+                <div class="theme-option minimal {% if theme == 'minimal' %}selected{% endif %}" onclick="selectTheme('minimal')">
+                    <h3>🌙 Dark & Minimal</h3>
+                    <p style="font-size: 12px;">Sleek, modern design</p>
+                </div>
+            </div>
+            <input type="hidden" name="theme" id="theme-input" value="{{ theme }}">
+        </div>
+        <button type="submit">Save Theme</button>
+    </form>
+
+    <hr style="margin: 30px 0; border: 1px solid var(--progress-bg);">
+
+    <!-- Daily Goals -->
+    <h2>🎯 Daily Goals</h2>
+    <form action="/update_settings" method="POST">
+        <div class="form-group">
+            <label>Protein Goal (grams):</label>
+            <input type="number" step="0.1" name="protein_goal" value="{{ protein_goal }}" required>
+            <p class="hint">Recommended: 0.8-1g per lb of body weight</p>
+        </div>
+
+        <div class="form-group">
+            <label>Calorie Goal:</label>
+            <input type="number" name="calorie_goal" value="{{ calorie_goal }}" required>
+            <p class="hint">For weight gain: +300-500 above maintenance</p>
+        </div>
+
+        <button type="submit">Save Goals</button>
+    </form>
+
+    <form action="/" method="GET">
+        <button type="submit" class="back-btn">Back to Tracker</button>
+    </form>
+</div>
+
+<script>
+    function selectTheme(themeName) {
+        document.getElementById('theme-input').value = themeName;
+
+        // Update visual selection
+        document.querySelectorAll('.theme-option').forEach(opt => {
+            opt.classList.remove('selected');
+        });
+        document.querySelector('.theme-option.' + themeName).classList.add('selected');
+    }
+</script>
+</body>
+</html>

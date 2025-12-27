@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Welcome - Setup Your Tracker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 700px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .onboarding-container {
+            background-color: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+
+        .form-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 10px;
+        }
+
+        .form-section h3 {
+            color: #4CAF50;
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: bold;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        .hint {
+            font-size: 13px;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .radio-option {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .radio-option input[type="radio"] {
+            width: auto;
+            margin-right: 8px;
+        }
+
+        .radio-option label {
+            display: inline;
+            font-weight: normal;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .emoji {
+            font-size: 48px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+<div class="onboarding-container">
+    <div class="emoji">🎯</div>
+    <h1>Welcome to Your Nutrition Tracker!</h1>
+    <p class="subtitle">Let's personalize your experience. This will only take a minute.</p>
+
+    <form action="/complete_onboarding" method="POST">
+
+        <!-- Section 1: Your Goal -->
+        <div class="form-section">
+            <h3>📊 What's your goal?</h3>
+            <div class="radio-group">
+                <div class="radio-option">
+                    <input type="radio" id="gain" name="tracking_goal" value="gain_weight" required>
+                    <label for="gain">Gain Weight</label>
+                </div>
+                <div class="radio-option">
+                    <input type="radio" id="lose" name="tracking_goal" value="lose_weight">
+                    <label for="lose">Lose Weight</label>
+                </div>
+                <div class="radio-option">
+                    <input type="radio" id="maintain" name="tracking_goal" value="maintain">
+                    <label for="maintain">Maintain</label>
+                </div>
+                <div class="radio-option">
+                    <input type="radio" id="muscle" name="tracking_goal" value="build_muscle">
+                    <label for="muscle">Build Muscle</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 2: Basic Info -->
+        <div class="form-section">
+            <h3>👤 About You</h3>
+
+            <div class="form-group">
+                <label>Current Weight (lbs):</label>
+                <input type="number" step="0.1" name="weight" placeholder="e.g., 150" required>
+                <p class="hint">We'll use this to suggest protein goals</p>
+            </div>
+
+            <div class="form-group">
+                <label>Activity Level:</label>
+                <select name="activity_level" required>
+                    <option value="">-- Select --</option>
+                    <option value="sedentary">Sedentary (little to no exercise)</option>
+                    <option value="light">Light (1-3 days/week)</option>
+                    <option value="moderate">Moderate (3-5 days/week)</option>
+                    <option value="active">Active (6-7 days/week)</option>
+                    <option value="very_active">Very Active (athlete/physical job)</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Section 3: Food Preferences -->
+        <div class="form-section">
+            <h3>🍽️ Your Food Preferences</h3>
+
+            <div class="form-group">
+                <label>Primary Cuisine:</label>
+                <select name="cuisine_preference" required>
+                    <option value="">-- Select --</option>
+                    <option value="indian">Indian</option>
+                    <option value="american">American</option>
+                    <option value="mexican">Mexican</option>
+                    <option value="asian">Asian (Chinese, Japanese, Thai)</option>
+                    <option value="mediterranean">Mediterranean</option>
+                    <option value="mixed">Mixed/Variety</option>
+                </select>
+                <p class="hint">We'll show you relevant foods in your tracker</p>
+            </div>
+        </div>
+
+        <!-- Section 4: Daily Goals -->
+        <div class="form-section">
+            <h3>🎯 Your Daily Goals</h3>
+
+            <div class="form-group">
+                <label>Protein Goal (grams/day):</label>
+                <input type="number" step="0.1" name="protein_goal" placeholder="e.g., 100" required>
+                <p class="hint">Recommended: 0.8-1g per lb for maintenance, 1-1.2g for muscle building</p>
+            </div>
+
+            <div class="form-group">
+                <label>Calorie Goal (per day):</label>
+                <input type="number" name="calorie_goal" placeholder="e.g., 2500" required>
+                <p class="hint">For weight gain: +300-500 above maintenance | For loss: -300-500 below</p>
+            </div>
+        </div>
+
+        <button type="submit">🚀 Start Tracking!</button>
+    </form>
+</div>
+</body>
+</html>

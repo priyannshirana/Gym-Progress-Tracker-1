@@ -1,0 +1,83 @@
+/* Minimal/Dark Theme - Clean, Modern, Sleek */
+:root {
+    --bg-color: #0A0E27;
+    --card-bg: #151932;
+    --primary: #00D9FF;
+    --secondary: #7B68EE;
+    --accent: #FF6B6B;
+    --text-dark: #E8EAED;
+    --text-light: #9AA0A6;
+    --success: #00E676;
+    --warning: #FFD600;
+    --danger: #FF5252;
+    --progress-bg: rgba(123, 104, 238, 0.2);
+    --shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+body {
+    background: var(--bg-color);
+    color: var(--text-dark);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.totals {
+    background: linear-gradient(135deg, #1a1f3a 0%, #2d3561 100%);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    border: 1px solid rgba(123, 104, 238, 0.2);
+}
+
+.section {
+    background: var(--card-bg);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    border: 1px solid rgba(123, 104, 238, 0.1);
+}
+
+button {
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    box-shadow: 0 4px 15px rgba(0, 217, 255, 0.3);
+    transition: all 0.2s ease;
+}
+
+button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(0, 217, 255, 0.4);
+}
+
+.meal-item, .workout-item {
+    background: rgba(123, 104, 238, 0.05);
+    border-left: 3px solid var(--primary);
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.meal-item:hover, .workout-item:hover {
+    background: rgba(123, 104, 238, 0.1);
+    border-left-width: 5px;
+}
+
+input, select, textarea {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(123, 104, 238, 0.3);
+    color: var(--text-dark);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 0 0 3px rgba(0, 217, 255, 0.1);
+}
+
+h2 {
+    color: var(--primary);
+    border-bottom: 2px solid var(--primary);
+}
+
+label {
+    color: var(--text-light);
+}

@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Gym Tracker</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename=theme + '_theme.css') }}">
+
+  <style>
+    /* Basic styling */
+    body {
+        font-family: Arial, sans-serif;
+        max-width: 1000px;
+        margin: 30px auto;
+        padding: 20px;
+        background-color: #f5f5f5;
+    }
+
+    h1 {
+        color: #333;
+        text-align: center;
+    }
+
+    h2 {
+        color: #555;
+        border-bottom: 2px solid #FF5722;
+        padding-bottom: 10px;
+    }
+
+    /* Navigation buttons */
+    .nav-buttons {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        margin-bottom: 20px;
+    }
+
+    .nav-btn {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 5px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .nav-btn-nutrition {
+        background-color: #4CAF50;
+        color: white;
+    }
+
+    .nav-btn-gym {
+        background-color: #FF5722;
+        color: white;
+    }
+
+    .nav-btn-settings {
+        background-color: #666;
+        color: white;
+    }
+
+    /* Container sections */
+    .section {
+        background-color: white;
+        padding: 20px;
+        margin: 20px 0;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    /* Form styling */
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    label {
+        display: block;
+        margin-bottom: 5px;
+        color: #555;
+        font-weight: bold;
+    }
+
+    input, select, textarea {
+        width: 100%;
+        padding: 12px;
+        font-size: 16px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        box-sizing: border-box;
+    }
+
+    textarea {
+        resize: vertical;
+        min-height: 60px;
+    }
+
+    /* Form row for multiple inputs */
+    .form-row {
+        display: flex;
+        gap: 15px;
+    }
+
+    .form-row .form-group {
+        flex: 1;
+    }
+
+    /* Buttons */
+    button {
+        background-color: #FF5722;
+        color: white;
+        border: none;
+        cursor: pointer;
+        font-weight: bold;
+        transition: background-color 0.3s;
+        padding: 12px;
+        font-size: 16px;
+        border-radius: 5px;
+        width: 100%;
+    }
+
+    button:hover {
+        background-color: #E64A19;
+    }
+
+    .clear-btn {
+        background-color: #f44336;
+        margin-top: 20px;
+    }
+
+    .clear-btn:hover {
+        background-color: #da190b;
+    }
+
+    /* Workout item display */
+    .workout-item {
+        border-left: 4px solid #FF5722;
+        padding: 15px;
+        margin: 10px 0;
+        background-color: #f9f9f9;
+        border-radius: 5px;
+    }
+
+    .workout-item strong {
+        color: #FF5722;
+        font-size: 18px;
+    }
+
+    .workout-details {
+        margin-top: 5px;
+        color: #666;
+    }
+
+    .last-time {
+        background-color: #FFF3E0;
+        padding: 8px;
+        border-radius: 5px;
+        margin-top: 8px;
+        font-size: 14px;
+        color: #E65100;
+    }
+  </style>
+</head>
+<body>
+<h1>💪 Gym Progress Tracker</h1>
+
+<!-- Navigation -->
+<div class="nav-buttons">
+  <a href="/" class="nav-btn nav-btn-nutrition">🍽️ Nutrition Tracker</a>
+  <a href="/gym" class="nav-btn nav-btn-gym">💪 Gym Tracker</a>
+  <a href="/settings" class="nav-btn nav-btn-settings">⚙️ Settings</a>
+</div>
+
+<!-- Log Workout Section -->
+<div class="section">
+  <h2>📝 Log Your Workout</h2>
+
+  <form action="/add_workout" method="POST">
+    <div class="form-group">
+      <label>Exercise Name:</label>
+      <input type="text" name="exercise" placeholder="e.g., Bench Press, Squats, Deadlift" required>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>Weight (lbs):</label>
+        <input type="number" step="0.1" name="weight" placeholder="e.g., 135" required>
+      </div>
+
+      <div class="form-group">
+        <label>Reps:</label>
+        <input type="number" name="reps" placeholder="e.g., 10" required>
+      </div>
+
+      <div class="form-group">
+        <label>Sets:</label>
+        <input type="number" name="sets" placeholder="e.g., 3" required>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Notes (optional):</label>
+      <textarea name="notes" placeholder="e.g., Felt strong today, Good form"></textarea>
+    </div>
+
+    <button type="submit">Add Exercise</button>
+  </form>
+</div>
+
+<!-- Today's Workouts -->
+<div class="section">
+  <h2>📋 Today's Workouts</h2>
+
+  {% if workouts %}
+  {% for workout in workouts %}
+  <div class="workout-item">
+    <strong>{{ workout.exercise }}</strong>
+    <div class="workout-details">
+      {{ workout.weight }} lbs × {{ workout.reps }} reps × {{ workout.sets }} sets
+    </div>
+    {% if workout.notes %}
+    <div class="workout-details">
+      <em>Note: {{ workout.notes }}</em>
+    </div>
+    {% endif %}
+  </div>
+  {% endfor %}
+
+  <!-- Clear workouts button -->
+  <form action="/clear_workouts" method="GET">
+    <button type="submit" class="clear-btn" onclick="return confirm('Clear all workouts for today?')">Clear Today's Workouts</button>
+  </form>
+  {% else %}
+  <p style="text-align: center; color: #999; padding: 30px;">No workouts logged yet! Start lifting! 💪</p>
+  {% endif %}
+</div>
+</body>
+</html>
