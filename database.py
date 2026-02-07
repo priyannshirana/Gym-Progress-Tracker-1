@@ -64,7 +64,7 @@ def init_db():
             tracking_goal TEXT,
             weight REAL,
             activity_level TEXT,
-            theme TEXT DEFAULT 'soft'
+            theme TEXT DEFAULT 'light'
         )
     ''')
 
@@ -126,7 +126,7 @@ def get_todays_meals():
 
     #Query all meals from today
     cursor.execute('''
-        SELECT food_name, quantity, protein, calories, meal_time
+        SELECT id, food_name, quantity, protein, calories, meal_time
         FROM meals
         WHERE date_logged = ?
     ''', (today,))
@@ -140,11 +140,12 @@ def get_todays_meals():
     meals = []
     for row in rows:
         meals.append({
-            'food' : row[0],
-            'quantity': row[1],
-            'protein' : row[2],
-            'calories': row[3],
-            'meal_time': row[4]
+            'id': row[0],
+            'food' : row[1],
+            'quantity': row[2],
+            'protein' : row[3],
+            'calories': row[4],
+            'meal_time': row[5]
         })
 
     return meals
@@ -161,6 +162,72 @@ def clear_todays_meals():
 
     conn.commit()
     conn.close()
+
+def delete_meal(food_name, meal_time):
+    """Delete a specific meal by food name and meal time for today"""
+    conn = sqlite3.connect(DATABASE_NAME)
+    cursor = conn.cursor()
+
+    today = datetime.now().strftime('%Y-%m-%d')
+
+    # Delete the specific meal from today
+    cursor.execute('''
+        DELETE FROM meals
+        WHERE food_name = ? AND meal_time = ? AND date_logged = ?
+        LIMIT 1
+    ''', (food_name, meal_time, today))
+
+    conn.commit()
+    conn.close()
+
+def delete_meal_by_id(meal_id):
+    """Delete a specific meal by ID"""
+    conn = sqlite3.connect(DATABASE_NAME)
+    cursor = conn.cursor()
+
+    cursor.execute('DELETE FROM meals WHERE id = ?', (meal_id,))
+
+    conn.commit()
+    conn.close()
+
+def update_meal(meal_id, food_name, quantity, protein, calories, meal_time):
+    """Update a specific meal by ID"""
+    conn = sqlite3.connect(DATABASE_NAME)
+    cursor = conn.cursor()
+
+    cursor.execute('''
+        UPDATE meals
+        SET food_name = ?, quantity = ?, protein = ?, calories = ?, meal_time = ?
+        WHERE id = ?
+    ''', (food_name, quantity, protein, calories, meal_time, meal_id))
+
+    conn.commit()
+    conn.close()
+
+def get_meal_by_id(meal_id):
+    """Get a specific meal by ID"""
+    conn = sqlite3.connect(DATABASE_NAME)
+    cursor = conn.cursor()
+
+    cursor.execute('''
+        SELECT id, food_name, quantity, protein, calories, meal_time
+        FROM meals
+        WHERE id = ?
+    ''', (meal_id,))
+
+    result = cursor.fetchone()
+    conn.close()
+
+    if result:
+        return {
+            'id': result[0],
+            'food': result[1],
+            'quantity': result[2],
+            'protein': result[3],
+            'calories': result[4],
+            'meal_time': result[5]
+        }
+    return None
 
 def get_goals():
     """Get user's protein and calorie goals"""
@@ -327,6 +394,75 @@ def get_last_workout(exercise_name):
         }
     return None
 
+def get_workout_history(days=30):
+    """Get workout history for the last N days for progress tracking"""
+    conn = sqlite3.connect(DATABASE_NAME)
+    cursor = conn.cursor()
+
+    # Calculate date range
+    end_date = datetime.now()
+    start_date = end_date - timedelta(days=days)
+    start_date_str = start_date.strftime('%Y-%m-%d')
+    end_date_str = end_date.strftime('%Y-%m-%d')
+
+    # Get workouts grouped by date
+    cursor.execute('''
+        SELECT date_logged, 
+               COUNT(*) as workout_count,
+               SUM(weight * reps * sets) as total_volume
+        FROM workouts
+        WHERE date_logged >= ? AND date_logged <= ?
+        GROUP BY date_logged
+        ORDER BY date_logged ASC
+    ''', (start_date_str, end_date_str))
+
+    rows = cursor.fetchall()
+    conn.close()
+
+    history = []
+    for row in rows:
+        history.append({
+            'date': row[0],
+            'workout_count': row[1],
+            'total_volume': row[2] if row[2] else 0
+        })
+
+    return history
+
+def get_exercise_progress(exercise_name, days=30):
+    """Get progress for a specific exercise over the last N days"""
+    conn = sqlite3.connect(DATABASE_NAME)
+    cursor = conn.cursor()
+
+    # Calculate date range
+    end_date = datetime.now()
+    start_date = end_date - timedelta(days=days)
+    start_date_str = start_date.strftime('%Y-%m-%d')
+    end_date_str = end_date.strftime('%Y-%m-%d')
+
+    # Get workouts for this exercise
+    cursor.execute('''
+        SELECT date_logged, weight, reps, sets, (weight * reps * sets) as volume
+        FROM workouts
+        WHERE exercise_name = ? AND date_logged >= ? AND date_logged <= ?
+        ORDER BY date_logged ASC
+    ''', (exercise_name, start_date_str, end_date_str))
+
+    rows = cursor.fetchall()
+    conn.close()
+
+    progress = []
+    for row in rows:
+        progress.append({
+            'date': row[0],
+            'weight': row[1],
+            'reps': row[2],
+            'sets': row[3],
+            'volume': row[4]
+        })
+
+    return progress
+
 def clear_todays_workouts():
     """Delete all workouts logged today"""
     conn = sqlite3.connect(DATABASE_NAME)
@@ -339,6 +475,23 @@ def clear_todays_workouts():
     conn.commit()
     conn.close()
 
+def get_all_exercises():
+    """Get all unique exercise names"""
+    conn = sqlite3.connect(DATABASE_NAME)
+    cursor = conn.cursor()
+
+    cursor.execute('''
+        SELECT DISTINCT exercise_name
+        FROM workouts
+        ORDER BY exercise_name ASC
+    ''')
+
+    rows = cursor.fetchall()
+    conn.close()
+
+    exercises = [row[0] for row in rows]
+    return exercises
+
 def get_theme():
     """Get user's theme preference"""
     conn = sqlite3.connect(DATABASE_NAME)
@@ -349,7 +502,7 @@ def get_theme():
 
     conn.close()
 
-    return result[0] if result and result[0] else 'soft'
+    return result[0] if result and result[0] else 'light'
 
 def update_theme(theme):
     """Update user's theme preference"""

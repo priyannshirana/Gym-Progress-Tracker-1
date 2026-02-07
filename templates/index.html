@@ -1,151 +1,57 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="{{ theme }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NutriTrack - Your Wellness Journey</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename=theme + '_theme.css') }}">
-
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
-    <!-- Font Awesome for better icons -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='unified_theme.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            min-height: 100vh;
-            overflow-x: hidden;
-            position: relative;
-        }
-
-        /* Soft animated gradient background */
-        .gradient-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            background: linear-gradient(-45deg, #fbc2eb, #a6c1ee, #ffecd2, #fcb69f);
-            background-size: 400% 400%;
-            animation: gradientShift 15s ease infinite;
-        }
-
-        @keyframes gradientShift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        /* Container */
         .container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 40px 20px;
         }
 
-        /* Header */
         .header {
             text-align: center;
-            margin-bottom: 60px;
-            opacity: 0;
-            animation: fadeInDown 0.8s ease forwards;
+            margin-bottom: 40px;
         }
 
         .header h1 {
-            font-size: 3rem;
-            font-weight: 700;
-            color: white;
-            text-shadow: 0 2px 20px rgba(0,0,0,0.1);
-            margin-bottom: 10px;
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
         }
 
-        .header p {
-            font-size: 1.2rem;
-            color: rgba(255,255,255,0.9);
-            font-weight: 300;
-        }
-
-        /* Navigation */
         .nav-container {
             display: flex;
             justify-content: center;
             gap: 15px;
             margin-bottom: 40px;
-            opacity: 0;
-            animation: fadeInDown 0.8s ease 0.2s forwards;
+            flex-wrap: wrap;
         }
 
         .nav-btn {
-            padding: 15px 30px;
-            border: none;
-            border-radius: 50px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
+            padding: 12px 24px;
+            background: var(--card-bg);
+            color: var(--text-primary);
             text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            backdrop-filter: blur(10px);
-            background: rgba(255, 255, 255, 0.15);
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .nav-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            background: rgba(255, 255, 255, 0.25);
-        }
-
-        .nav-btn.active {
-            background: rgba(255, 255, 255, 0.3);
-        }
-
-        /* Glass Card */
-        .glass-card {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(20px);
-            border-radius: 30px;
-            padding: 40px;
-            margin-bottom: 30px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-            opacity: 0;
-            animation: fadeInUp 0.8s ease forwards;
-        }
-
-        .glass-card:nth-child(2) { animation-delay: 0.1s; }
-        .glass-card:nth-child(3) { animation-delay: 0.2s; }
-        .glass-card:nth-child(4) { animation-delay: 0.3s; }
-        .glass-card:nth-child(5) { animation-delay: 0.4s; }
-
-        /* Progress Section */
-        .progress-section {
-            text-align: center;
-        }
-
-        .progress-section h2 {
-            color: white;
-            font-size: 2rem;
-            margin-bottom: 40px;
+            border-radius: 10px;
             font-weight: 600;
+            transition: all 0.3s ease;
+            border: 1px solid var(--card-border);
+        }
+
+        .nav-btn:hover, .nav-btn.active {
+            background: var(--primary);
+            color: white;
         }
 
         .progress-circles {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 40px;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
             margin-top: 30px;
         }
 
@@ -153,10 +59,9 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 20px;
+            gap: 15px;
         }
 
-        /* Circular Progress */
         .circular-progress {
             position: relative;
             width: 180px;
@@ -167,25 +72,18 @@
             transform: rotate(-90deg);
         }
 
-        .progress-bg {
+        .progress-bg-circle {
             fill: none;
-            stroke: rgba(255, 255, 255, 0.1);
+            stroke: var(--progress-bg);
             stroke-width: 12;
         }
 
-        .progress-bar {
+        .progress-bar-circle {
             fill: none;
+            stroke: var(--primary);
             stroke-width: 12;
             stroke-linecap: round;
             transition: stroke-dashoffset 1s ease;
-        }
-
-        .progress-bar.protein {
-            stroke: url(#proteinGradient);
-        }
-
-        .progress-bar.calories {
-            stroke: url(#caloriesGradient);
         }
 
         .progress-text {
@@ -199,50 +97,19 @@
         .progress-value {
             font-size: 2rem;
             font-weight: 700;
-            color: white;
+            color: var(--text-primary);
             display: block;
         }
 
         .progress-label {
             font-size: 0.9rem;
-            color: rgba(255, 255, 255, 0.8);
+            color: var(--text-secondary);
             display: block;
         }
 
-        .progress-stats {
-            color: white;
-            text-align: center;
-        }
-
         .progress-stats h3 {
-            font-size: 1.2rem;
-            margin-bottom: 8px;
-            font-weight: 600;
-        }
-
-        .progress-stats p {
-            font-size: 0.95rem;
-            opacity: 0.9;
-        }
-
-        /* Form Sections */
-        .section-title {
-            color: white;
-            font-size: 1.5rem;
-            margin-bottom: 25px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .form-grid {
-            display: grid;
-            gap: 20px;
-        }
-
-        .form-group {
-            margin-bottom: 0;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
         }
 
         .form-row {
@@ -251,131 +118,108 @@
             gap: 15px;
         }
 
-        label {
-            display: block;
-            margin-bottom: 8px;
-            color: rgba(255, 255, 255, 0.9);
-            font-weight: 500;
-            font-size: 0.95rem;
+        .form-group {
+            margin-bottom: 1rem;
         }
 
-input, select, textarea {
-    width: 100%;
-    padding: 14px 18px;
-    border-radius: 15px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    background: rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(10px);
-    color: #2d3748;  /* CHANGED: Dark text for readability */
-    font-size: 1rem;
-    transition: all 0.3s ease;
-    font-weight: 500;
-}
-
-input::placeholder, select::placeholder, textarea::placeholder {
-    color: rgba(45, 55, 72, 0.5);  /* CHANGED: Darker placeholder */
-}
-
-input:focus, select:focus, textarea:focus {
-    outline: none;
-    border-color: rgba(255, 255, 255, 0.4);
-    background: rgba(255, 255, 255, 0.25);  /* CHANGED: Lighter on focus */
-    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
-}
-
-/* Darker text for select options */
-select option {
-    background: white;
-    color: #2d3748;
-}
-
-        select {
-            cursor: pointer;
+        .favorite-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 12px;
         }
 
-        /* Buttons - Soft colors */
-        .btn {
-            padding: 16px 32px;
-            border: none;
-            border-radius: 50px;
-            font-size: 1.05rem;
+        .favorite-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .favorite-info {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .favorite-name {
+            color: var(--text-primary);
             font-weight: 600;
+            font-size: 1.05rem;
+            margin-bottom: 5px;
+        }
+
+        .favorite-stats {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .favorite-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .favorite-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            background: var(--primary);
+            color: white;
+            font-size: 0.85rem;
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            width: 100%;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .favorite-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .meal-actions {
+            display: flex;
+            gap: 8px;
             margin-top: 10px;
         }
 
-        .btn-primary {
-            background: linear-gradient(135deg, #a8caba 0%, #c9b6e4 100%);
-            color: white;
-            box-shadow: 0 4px 15px rgba(168, 202, 186, 0.4);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(168, 202, 186, 0.6);
-        }
-
-        .btn-danger {
-            background: linear-gradient(135deg, #fbc2eb 0%, #f5b2c8 100%);
-            color: white;
-            box-shadow: 0 4px 15px rgba(251, 194, 235, 0.4);
-        }
-
-        .btn-danger:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(251, 194, 235, 0.6);
-        }
-
-        /* Meal Items */
-        .meals-container {
+        .streak-grid {
             display: grid;
-            gap: 15px;
-            margin-top: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            text-align: center;
         }
 
-        .meal-item {
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            transition: all 0.3s ease;
+        .streak-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            padding: 25px;
+            border-radius: 16px;
         }
 
-        .meal-item:hover {
-            transform: translateX(5px);
-            background: rgba(255, 255, 255, 0.2);
-        }
-
-        .meal-time {
-            display: inline-block;
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 0.85rem;
+        .streak-emoji {
+            font-size: 3rem;
             margin-bottom: 10px;
-            font-weight: 500;
         }
 
-        .meal-name {
-            color: white;
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: 8px;
+        .streak-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 5px;
         }
 
-        .meal-stats {
-            color: rgba(255, 255, 255, 0.8);
+        .streak-label {
             font-size: 0.95rem;
+            color: var(--text-secondary);
         }
 
         .empty-state {
             text-align: center;
             padding: 60px 20px;
-            color: rgba(255, 255, 255, 0.7);
+            color: var(--text-muted);
         }
 
         .empty-state i {
@@ -383,215 +227,117 @@ select option {
             margin-bottom: 20px;
             opacity: 0.5;
         }
-
-        .empty-state p {
-            font-size: 1.1rem;
-        }
-
-        /* Animations */
-        @keyframes fadeInDown {
-            from {
-                opacity: 0;
-                transform: translateY(-30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .header h1 {
-                font-size: 2rem;
-            }
-
-            .glass-card {
-                padding: 25px;
-            }
-
-            .nav-container {
-                flex-wrap: wrap;
-            }
-
-            .progress-circles {
-                grid-template-columns: 1fr;
-            }
-        }
     </style>
 </head>
 <body>
-<!-- Animated Background -->
-<div class="gradient-bg"></div>
-
-<div class="container">
-    <!-- Header -->
-    <div class="header">
-        <h1>NutriTrack</h1>
-        <p>Your personalized wellness journey</p>
+    <!-- Mode Toggle Button -->
+    <div class="mode-toggle" onclick="toggleTheme()">
+        <span id="theme-icon">{{ '🌙' if theme == 'light' else '☀️' }}</span>
+        <span id="theme-text">{{ 'Dark' if theme == 'light' else 'Light' }}</span>
     </div>
 
-    <!-- Navigation -->
-    <div class="nav-container">
-        <a href="/" class="nav-btn active">
-            <i class="fas fa-utensils"></i> Nutrition
-        </a>
-        <a href="/gym" class="nav-btn">
-            <i class="fas fa-dumbbell"></i> Workout
-        </a>
-        <a href="/settings" class="nav-btn">
-            <i class="fas fa-cog"></i> Settings
-        </a>
-    </div>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>NutriTrack</h1>
+            <p>Your personalized wellness journey</p>
+        </div>
 
-    <!-- Progress Section -->
-    <div class="glass-card progress-section">
-        <h2>Today's Progress</h2>
+        <!-- Navigation -->
+        <div class="nav-container">
+            <a href="/" class="nav-btn active">
+                <i class="fas fa-utensils"></i> Nutrition
+            </a>
+            <a href="/gym" class="nav-btn">
+                <i class="fas fa-dumbbell"></i> Workout
+            </a>
+            <a href="/settings" class="nav-btn">
+                <i class="fas fa-cog"></i> Settings
+            </a>
+        </div>
 
-        <div class="progress-circles">
-            <!-- Protein Circle -->
-            <div class="progress-circle-wrapper">
-                <div class="circular-progress">
-                    <svg width="180" height="180">
-                        <defs>
-                            <linearGradient id="proteinGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" style="stop-color:#a8caba;stop-opacity:1" />
-                                <stop offset="100%" style="stop-color:#c9b6e4;stop-opacity:1" />
-                            </linearGradient>
-                        </defs>
-                        <circle class="progress-bg" cx="90" cy="90" r="80"></circle>
-                        <circle class="progress-bar protein" cx="90" cy="90" r="80"
-                                stroke-dasharray="502.4"
-                                stroke-dashoffset="{{ 502.4 - (502.4 * protein_percentage / 100) if protein_percentage <= 100 else 0 }}">
-                        </circle>
-                    </svg>
-                    <div class="progress-text">
-                        <span class="progress-value">{{ "%.0f"|format(protein_percentage) }}%</span>
-                        <span class="progress-label">Protein</span>
+        <!-- Progress Section -->
+        <div class="totals">
+            <h2 style="text-align: center;">Today's Progress</h2>
+
+            <div class="progress-circles">
+                <!-- Protein Circle -->
+                <div class="progress-circle-wrapper">
+                    <div class="circular-progress">
+                        <svg width="180" height="180">
+                            <circle class="progress-bg-circle" cx="90" cy="90" r="80"></circle>
+                            <circle class="progress-bar-circle" cx="90" cy="90" r="80"
+                                    stroke-dasharray="502.4"
+                                    stroke-dashoffset="{{ 502.4 - (502.4 * protein_percentage / 100) if protein_percentage <= 100 else 0 }}">
+                            </circle>
+                        </svg>
+                        <div class="progress-text">
+                            <span class="progress-value">{{ "%.0f"|format(protein_percentage) }}%</span>
+                            <span class="progress-label">Protein</span>
+                        </div>
+                    </div>
+                    <div class="progress-stats text-center">
+                        <h3>{{ "%.1f"|format(proteinTotal) }}g / {{ protein_goal }}g</h3>
+                        <p>Daily Goal</p>
                     </div>
                 </div>
-                <div class="progress-stats">
-                    <h3>{{ "%.1f"|format(proteinTotal) }}g / {{ protein_goal }}g</h3>
-                    <p>Daily Goal</p>
-                </div>
-            </div>
 
-            <!-- Calories Circle -->
-            <div class="progress-circle-wrapper">
-                <div class="circular-progress">
-                    <svg width="180" height="180">
-                        <defs>
-                            <linearGradient id="caloriesGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" style="stop-color:#fbc2eb;stop-opacity:1" />
-                                <stop offset="100%" style="stop-color:#f5b2c8;stop-opacity:1" />
-                            </linearGradient>
-                        </defs>
-                        <circle class="progress-bg" cx="90" cy="90" r="80"></circle>
-                        <circle class="progress-bar calories" cx="90" cy="90" r="80"
-                                stroke-dasharray="502.4"
-                                stroke-dashoffset="{{ 502.4 - (502.4 * calorie_percentage / 100) if calorie_percentage <= 100 else 0 }}">
-                        </circle>
-                    </svg>
-                    <div class="progress-text">
-                        <span class="progress-value">{{ "%.0f"|format(calorie_percentage) }}%</span>
-                        <span class="progress-label">Calories</span>
+                <!-- Calories Circle -->
+                <div class="progress-circle-wrapper">
+                    <div class="circular-progress">
+                        <svg width="180" height="180">
+                            <circle class="progress-bg-circle" cx="90" cy="90" r="80"></circle>
+                            <circle class="progress-bar-circle" cx="90" cy="90" r="80"
+                                    stroke-dasharray="502.4"
+                                    stroke-dashoffset="{{ 502.4 - (502.4 * calorie_percentage / 100) if calorie_percentage <= 100 else 0 }}">
+                            </circle>
+                        </svg>
+                        <div class="progress-text">
+                            <span class="progress-value">{{ "%.0f"|format(calorie_percentage) }}%</span>
+                            <span class="progress-label">Calories</span>
+                        </div>
                     </div>
-                </div>
-                <div class="progress-stats">
-                    <h3>{{ caloriesTotal|int }} / {{ calorie_goal }}</h3>
-                    <p>Daily Goal</p>
+                    <div class="progress-stats text-center">
+                        <h3>{{ caloriesTotal|int }} / {{ calorie_goal }}</h3>
+                        <p>Daily Goal</p>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-    <!-- Quick Add Favorites -->
-    {% if favorite_foods %}
-    <div class="glass-card">
-        <h2 class="section-title">
-            <i class="fas fa-star"></i> Quick Add Favorites
-        </h2>
 
-        <p style="color: rgba(255, 255, 255, 0.8); margin-bottom: 20px; font-size: 0.95rem;">
-            Your most logged foods - click to add instantly!
-        </p>
+        <!-- Quick Add Favorites -->
+        {% if favorite_foods %}
+        <div class="section">
+            <h2><i class="fas fa-star"></i> Quick Add Favorites</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 20px;">Your most logged foods - click to add instantly!</p>
 
-        <div style="display: grid; gap: 12px;">
             {% for fav in favorite_foods %}
-            <div style="background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(10px); border-radius: 15px; padding: 18px; border: 1px solid rgba(255, 255, 255, 0.2);">
-                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
-                    <!-- Food Info -->
-                    <div style="flex: 1; min-width: 200px;">
-                        <div style="color: white; font-weight: 600; font-size: 1.05rem; margin-bottom: 5px;">
-                            {{ fav.food_name }} ({{ fav.quantity }} {{ fav.unit }})
-                        </div>
-                        <div style="color: rgba(255, 255, 255, 0.7); font-size: 0.9rem;">
+            <div class="favorite-card">
+                <div class="favorite-header">
+                    <div class="favorite-info">
+                        <div class="favorite-name">{{ fav.food_name }} ({{ fav.quantity }} {{ fav.unit }})</div>
+                        <div class="favorite-stats">
                             <i class="fas fa-drumstick-bite"></i> {{ "%.1f"|format(fav.protein) }}g protein  •
                             <i class="fas fa-fire"></i> {{ fav.calories|int }} cal  •
-                            <span style="opacity: 0.6;">Logged {{ fav.times_logged }}x</span>
+                            Logged {{ fav.times_logged }}x
                         </div>
                     </div>
-
-                    <!-- Quick Add Buttons -->
-                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                        <a href="/add_favorite/{{ fav.food_name }}/{{ fav.quantity }}/{{ fav.unit }}/{{ fav.protein }}/{{ fav.calories }}/Breakfast"
-                           style="text-decoration: none;">
-                            <button style="padding: 8px 16px; border: none; border-radius: 20px; background: rgba(168, 202, 186, 0.3); color: white; font-size: 0.85rem; cursor: pointer; transition: all 0.2s ease; font-weight: 500;"
-                                    onmouseover="this.style.background='rgba(168, 202, 186, 0.5)'"
-                                    onmouseout="this.style.background='rgba(168, 202, 186, 0.3)'">
-                                Breakfast
-                            </button>
-                        </a>
-                        <a href="/add_favorite/{{ fav.food_name }}/{{ fav.quantity }}/{{ fav.unit }}/{{ fav.protein }}/{{ fav.calories }}/Lunch"
-                           style="text-decoration: none;">
-                            <button style="padding: 8px 16px; border: none; border-radius: 20px; background: rgba(168, 202, 186, 0.3); color: white; font-size: 0.85rem; cursor: pointer; transition: all 0.2s ease; font-weight: 500;"
-                                    onmouseover="this.style.background='rgba(168, 202, 186, 0.5)'"
-                                    onmouseout="this.style.background='rgba(168, 202, 186, 0.3)'">
-                                Lunch
-                            </button>
-                        </a>
-                        <a href="/add_favorite/{{ fav.food_name }}/{{ fav.quantity }}/{{ fav.unit }}/{{ fav.protein }}/{{ fav.calories }}/Dinner"
-                           style="text-decoration: none;">
-                            <button style="padding: 8px 16px; border: none; border-radius: 20px; background: rgba(168, 202, 186, 0.3); color: white; font-size: 0.85rem; cursor: pointer; transition: all 0.2s ease; font-weight: 500;"
-                                    onmouseover="this.style.background='rgba(168, 202, 186, 0.5)'"
-                                    onmouseout="this.style.background='rgba(168, 202, 186, 0.3)'">
-                                Dinner
-                            </button>
-                        </a>
-                        <a href="/add_favorite/{{ fav.food_name }}/{{ fav.quantity }}/{{ fav.unit }}/{{ fav.protein }}/{{ fav.calories }}/Pre-workout"
-                           style="text-decoration: none;">
-                            <button style="padding: 8px 16px; border: none; border-radius: 20px; background: rgba(251, 194, 235, 0.3); color: white; font-size: 0.85rem; cursor: pointer; transition: all 0.2s ease; font-weight: 500;"
-                                    onmouseover="this.style.background='rgba(251, 194, 235, 0.5)'"
-                                    onmouseout="this.style.background='rgba(251, 194, 235, 0.3)'">
-                                Snack
-                            </button>
-                        </a>
+                    <div class="favorite-buttons">
+                        <a href="/add_favorite/{{ fav.food_name }}/{{ fav.quantity }}/{{ fav.unit }}/{{ fav.protein }}/{{ fav.calories }}/Breakfast" class="favorite-btn">Breakfast</a>
+                        <a href="/add_favorite/{{ fav.food_name }}/{{ fav.quantity }}/{{ fav.unit }}/{{ fav.protein }}/{{ fav.calories }}/Lunch" class="favorite-btn">Lunch</a>
+                        <a href="/add_favorite/{{ fav.food_name }}/{{ fav.quantity }}/{{ fav.unit }}/{{ fav.protein }}/{{ fav.calories }}/Dinner" class="favorite-btn">Dinner</a>
+                        <a href="/add_favorite/{{ fav.food_name }}/{{ fav.quantity }}/{{ fav.unit }}/{{ fav.protein }}/{{ fav.calories }}/Pre-workout" class="favorite-btn">Snack</a>
                     </div>
                 </div>
             </div>
             {% endfor %}
         </div>
-    </div>
-    {% endif %}
+        {% endif %}
 
-    <!-- Quick Log from Database -->
-    <div class="glass-card">
-        <h2 class="section-title">
-            <i class="fas fa-book"></i> Quick Log
-        </h2>
-
-        <form action="/add_from_database" method="POST">
-            <div class="form-grid">
+        <!-- Quick Log from Database -->
+        <div class="section">
+            <h2><i class="fas fa-book"></i> Quick Log</h2>
+            <form action="/add_from_database" method="POST">
                 <div class="form-group">
                     <label>Select Food</label>
                     <select name="food" required>
@@ -607,7 +353,6 @@ select option {
                         <label>Quantity</label>
                         <input type="number" step="0.1" name="quantity" placeholder="e.g., 2" required>
                     </div>
-
                     <div class="form-group">
                         <label>Unit</label>
                         <select name="unit" required>
@@ -638,18 +383,13 @@ select option {
                 <button type="submit" class="btn btn-primary">
                     <i class="fas fa-plus-circle"></i> Log Food
                 </button>
-            </div>
-        </form>
-    </div>
+            </form>
+        </div>
 
-    <!-- Custom Food Entry -->
-    <div class="glass-card">
-        <h2 class="section-title">
-            <i class="fas fa-edit"></i> Add Custom Food
-        </h2>
-
-        <form action="/add_custom" method="POST">
-            <div class="form-grid">
+        <!-- Custom Food Entry -->
+        <div class="section">
+            <h2><i class="fas fa-edit"></i> Add Custom Food</h2>
+            <form action="/add_custom" method="POST">
                 <div class="form-group">
                     <label>Food Name</label>
                     <input type="text" name="food" placeholder="e.g., Homemade Pasta" required>
@@ -660,7 +400,6 @@ select option {
                         <label>Quantity</label>
                         <input type="number" step="0.1" name="quantity" placeholder="1" required>
                     </div>
-
                     <div class="form-group">
                         <label>Unit</label>
                         <select name="unit" required>
@@ -679,7 +418,6 @@ select option {
                         <label>Protein (g)</label>
                         <input type="number" step="0.1" name="protein" placeholder="25" required>
                     </div>
-
                     <div class="form-group">
                         <label>Calories</label>
                         <input type="number" step="0.1" name="calories" placeholder="350" required>
@@ -703,140 +441,205 @@ select option {
                 <button type="submit" class="btn btn-primary">
                     <i class="fas fa-plus-circle"></i> Add Custom Food
                 </button>
+            </form>
+        </div>
+
+        <!-- Today's Meals -->
+        <div class="section">
+            <h2><i class="fas fa-history"></i> Today's Meals</h2>
+
+            {% if meals %}
+            <div class="meals-container">
+                {% for meal in meals %}
+                <div class="meal-item">
+                    <span class="meal-time" style="display: inline-block; background: var(--primary); color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.85rem; margin-bottom: 10px;">{{ meal.meal_time }}</span>
+                    <h3>{{ meal.food }}</h3>
+                    <p>
+                        <i class="fas fa-drumstick-bite"></i> {{ "%.1f"|format(meal.protein) }}g protein  •
+                        <i class="fas fa-fire"></i> {{ meal.calories|int }} cal
+                    </p>
+                    <div class="action-buttons">
+                        <button class="btn-small btn-edit" onclick="editMeal({{ meal.id }}, '{{ meal.food }}', {{ meal.protein }}, {{ meal.calories }}, '{{ meal.meal_time }}')">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        <button class="btn-small btn-delete" onclick="deleteMeal({{ meal.id }})">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
             </div>
-        </form>
-    </div>
 
-    <!-- Today's Meals -->
-    <div class="glass-card">
-        <h2 class="section-title">
-            <i class="fas fa-history"></i> Today's Meals
-        </h2>
+            <form action="/clear" method="GET" style="margin-top: 25px;">
+                <button type="submit" class="btn btn-danger" onclick="return confirm('Clear all meals for today?')">
+                    <i class="fas fa-trash-alt"></i> Clear All Meals
+                </button>
+            </form>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-cookie-bite"></i>
+                <p>No meals logged yet. Start tracking!</p>
+            </div>
+            {% endif %}
+        </div>
 
-        {% if meals %}
-        <div class="meals-container">
-            {% for meal in meals %}
-            <div class="meal-item">
-                <span class="meal-time">{{ meal.meal_time }}</span>
-                <div class="meal-name">{{ meal.food }}</div>
-                <div class="meal-stats">
-                    <i class="fas fa-drumstick-bite"></i> {{ "%.1f"|format(meal.protein) }}g protein  •
-                    <i class="fas fa-fire"></i> {{ meal.calories|int }} cal
+        <!-- Streak Stats -->
+        <div class="section">
+            <h2 class="text-center"><i class="fas fa-fire"></i> Your Progress</h2>
+
+            <div class="streak-grid">
+                <div class="streak-card">
+                    <div class="streak-emoji">🔥</div>
+                    <div class="streak-number">{{ current_streak }}</div>
+                    <div class="streak-label">Day Streak</div>
+                </div>
+                <div class="streak-card">
+                    <div class="streak-emoji">🏆</div>
+                    <div class="streak-number">{{ best_streak }}</div>
+                    <div class="streak-label">Best Streak</div>
+                </div>
+                <div class="streak-card">
+                    <div class="streak-emoji">📅</div>
+                    <div class="streak-number">{{ total_days }}</div>
+                    <div class="streak-label">Days Tracked</div>
                 </div>
             </div>
-            {% endfor %}
         </div>
-
-        <form action="/clear" method="GET" style="margin-top: 25px;">
-            <button type="submit" class="btn btn-danger" onclick="return confirm('Clear all meals for today?')">
-                <i class="fas fa-trash-alt"></i> Clear All Meals
-            </button>
-        </form>
-        {% else %}
-        <div class="empty-state">
-            <i class="fas fa-cookie-bite"></i>
-            <p>No meals logged yet. Start tracking!</p>
-        </div>
-        {% endif %}
-    </div>
-    <!-- Streak Stats -->
-    <div class="glass-card">
-        <h2 class="section-title" style="justify-content: center;">
-            <i class="fas fa-fire"></i> Your Progress
-        </h2>
-
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 20px; text-align: center;">
-            <!-- Current Streak -->
-            <div style="background: rgba(255, 255, 255, 0.1); padding: 25px; border-radius: 20px; border: 2px solid rgba(255, 255, 255, 0.2);">
-                <div style="font-size: 3rem; margin-bottom: 10px;">🔥</div>
-                <div style="font-size: 2.5rem; font-weight: 700; color: white; margin-bottom: 5px;">{{ current_streak }}</div>
-                <div style="font-size: 0.95rem; color: rgba(255, 255, 255, 0.8);">Day Streak</div>
-            </div>
-
-            <!-- Best Streak -->
-            <div style="background: rgba(255, 255, 255, 0.1); padding: 25px; border-radius: 20px; border: 2px solid rgba(255, 255, 255, 0.2);">
-                <div style="font-size: 3rem; margin-bottom: 10px;">🏆</div>
-                <div style="font-size: 2.5rem; font-weight: 700; color: white; margin-bottom: 5px;">{{ best_streak }}</div>
-                <div style="font-size: 0.95rem; color: rgba(255, 255, 255, 0.8);">Best Streak</div>
-            </div>
-
-            <!-- Total Days -->
-            <div style="background: rgba(255, 255, 255, 0.1); padding: 25px; border-radius: 20px; border: 2px solid rgba(255, 255, 255, 0.2);">
-                <div style="font-size: 3rem; margin-bottom: 10px;">📅</div>
-                <div style="font-size: 2.5rem; font-weight: 700; color: white; margin-bottom: 5px;">{{ total_days }}</div>
-                <div style="font-size: 0.95rem; color: rgba(255, 255, 255, 0.8);">Days Tracked</div>
-            </div>
-        </div>
-
-        {% if current_streak >= 3 %}
-        <div style="text-align: center; margin-top: 20px; padding: 15px; background: rgba(255, 255, 255, 0.15); border-radius: 15px;">
-            <span style="color: white; font-size: 1.1rem; font-weight: 600;">
-                {% if current_streak >= 7 %}
-                    🌟 Amazing! You're on fire! Keep it up! 🌟
-                {% elif current_streak >= 5 %}
-                    💪 Fantastic streak! You're crushing it!
-                {% else %}
-                    ✨ Great job! Keep the momentum going!
-                {% endif %}
-            </span>
-        </div>
-        {% endif %}
     </div>
 
-</div>
+    <!-- Edit Meal Modal -->
+    <div class="modal" id="editMealModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Edit Meal</h2>
+                <button class="modal-close" onclick="closeEditModal()">&times;</button>
+            </div>
+            <form id="editMealForm" method="POST">
+                <input type="hidden" id="edit_meal_id" name="meal_id">
+                <div class="form-group">
+                    <label>Food Name</label>
+                    <input type="text" id="edit_food_name" name="food_name" required>
+                </div>
+                <div class="form-group">
+                    <label>Quantity</label>
+                    <input type="number" step="0.1" id="edit_quantity" name="quantity" required>
+                </div>
+                <div class="form-group">
+                    <label>Protein (g)</label>
+                    <input type="number" step="0.1" id="edit_protein" name="protein" required>
+                </div>
+                <div class="form-group">
+                    <label>Calories</label>
+                    <input type="number" step="0.1" id="edit_calories" name="calories" required>
+                </div>
+                <div class="form-group">
+                    <label>Meal Time</label>
+                    <select id="edit_meal_time" name="meal_time" required>
+                        <option value="Breakfast">Breakfast</option>
+                        <option value="Mid-morning Snack">Mid-morning Snack</option>
+                        <option value="Lunch">Lunch</option>
+                        <option value="Afternoon Snack">Afternoon Snack</option>
+                        <option value="Pre-workout">Pre-workout</option>
+                        <option value="Dinner">Dinner</option>
+                        <option value="Evening Snack">Evening Snack</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Save Changes
+                </button>
+            </form>
+        </div>
+    </div>
 
-<!-- Celebration Confetti -->
-{% if goal_reached %}
-<div id="confetti-container"></div>
-<script>
-    function createConfetti() {
-        const colors = ['#a8caba', '#c9b6e4', '#fbc2eb', '#f5b2c8', '#a6c1ee'];
-        const confettiCount = 100;
-        const container = document.getElementById('confetti-container');
+    <!-- Celebration Confetti -->
+    {% if goal_reached %}
+    <script>
+        setTimeout(() => {
+            alert('🎉 Amazing! You crushed your goal today! 💪');
+        }, 500);
+    </script>
+    {% endif %}
 
-        container.style.position = 'fixed';
-        container.style.top = '0';
-        container.style.left = '0';
-        container.style.width = '100%';
-        container.style.height = '100%';
-        container.style.pointerEvents = 'none';
-        container.style.zIndex = '9999';
+    <!-- Toast Notification -->
+    {% if success_message %}
+    <script>
+        const messages = {
+            'food_logged': '✅ Food logged successfully!',
+            'meal_deleted': '✅ Meal deleted successfully!',
+            'meal_updated': '✅ Meal updated successfully!',
+            'meals_cleared': '✅ All meals cleared!',
+            'theme_updated': '✅ Theme updated!',
+            'error': '❌ An error occurred. Please try again.',
+            'error_invalid': '❌ Invalid input. Please check your values.',
+            'error_empty_food': '❌ Food name cannot be empty.',
+            'error_quantity': '❌ Please enter a valid quantity (0-10000).',
+            'error_protein': '❌ Please enter valid protein amount (0-1000g).',
+            'error_calories': '❌ Please enter valid calories (0-10000).'
+        };
 
-        for (let i = 0; i < confettiCount; i++) {
-            const confetti = document.createElement('div');
-            confetti.style.position = 'absolute';
-            confetti.style.width = '10px';
-            confetti.style.height = '10px';
-            confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-            confetti.style.left = Math.random() * 100 + '%';
-            confetti.style.top = '-10px';
-            confetti.style.opacity = Math.random();
-            confetti.style.borderRadius = '50%';
-            confetti.style.transform = 'rotate(' + Math.random() * 360 + 'deg)';
-            confetti.style.animation = 'confetti-fall ' + (Math.random() * 3 + 2) + 's linear';
+        const message = messages['{{ success_message }}'] || '✅ Action completed!';
+        showToast(message);
 
-            container.appendChild(confetti);
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+    </script>
+    {% endif %}
+
+    <script>
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+
+            html.setAttribute('data-theme', newTheme);
+            document.getElementById('theme-icon').textContent = newTheme === 'light' ? '🌙' : '☀️';
+            document.getElementById('theme-text').textContent = newTheme === 'light' ? 'Dark' : 'Light';
+
+            // Save preference
+            fetch('/update_theme', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'theme=' + newTheme
+            });
         }
 
-        setTimeout(() => container.remove(), 5000);
-    }
+        function editMeal(id, foodName, protein, calories, mealTime) {
+            document.getElementById('edit_meal_id').value = id;
+            document.getElementById('edit_food_name').value = foodName;
+            // Extract quantity if present in food name (e.g., "Rice (100 grams)")
+            document.getElementById('edit_quantity').value = 1;
+            document.getElementById('edit_protein').value = protein;
+            document.getElementById('edit_calories').value = calories;
+            document.getElementById('edit_meal_time').value = mealTime;
 
-    const style = document.createElement('style');
-    style.textContent = `
-        @keyframes confetti-fall {
-            to {
-                transform: translateY(100vh) rotate(720deg);
+            document.getElementById('editMealForm').action = '/edit_meal/' + id;
+            document.getElementById('editMealModal').classList.add('active');
+        }
+
+        function closeEditModal() {
+            document.getElementById('editMealModal').classList.remove('active');
+        }
+
+        function deleteMeal(id) {
+            if (confirm('Are you sure you want to delete this meal?')) {
+                window.location.href = '/delete_meal/' + id;
             }
         }
-    `;
-    document.head.appendChild(style);
 
-    createConfetti();
-
-    setTimeout(() => {
-        alert('🎉 Amazing! You crushed your goal today! 💪');
-    }, 500);
-</script>
-{% endif %}
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('editMealModal');
+            if (event.target === modal) {
+                closeEditModal();
+            }
+        }
+    </script>
 </body>
 </html>

@@ -389,11 +389,73 @@ def clear_workouts():
 def update_theme():
     """Update user's theme preference"""
     theme = request.form['theme']
-    if theme not in ['soft', 'minimal']:
+    if theme not in ['light', 'dark']:
         return redirect(url_for('settings', success='error_theme'))
 
     database.update_theme(theme)
-    return redirect(url_for('settings', success='theme_updated'))
+    return redirect(url_for('home', success='theme_updated'))
+
+@app.route('/delete_meal/<int:meal_id>')
+def delete_meal_route(meal_id):
+    """Delete a specific meal by ID"""
+    try:
+        database.delete_meal_by_id(meal_id)
+        return redirect(url_for('home', success='meal_deleted'))
+    except Exception as e:
+        print(f"Error deleting meal: {e}")
+        return redirect(url_for('home', success='error'))
+
+@app.route('/edit_meal/<int:meal_id>', methods=['POST'])
+def edit_meal(meal_id):
+    """Edit a specific meal by ID"""
+    try:
+        food_name = request.form['food_name']
+        quantity = float(request.form['quantity'])
+        protein = float(request.form['protein'])
+        calories = float(request.form['calories'])
+        meal_time = request.form['meal_time']
+
+        # Validation
+        if not food_name:
+            return redirect(url_for('home', success='error_empty_food'))
+        if quantity <= 0 or quantity > 10000:
+            return redirect(url_for('home', success='error_quantity'))
+        if protein < 0 or protein > 1000:
+            return redirect(url_for('home', success='error_protein'))
+        if calories < 0 or calories > 10000:
+            return redirect(url_for('home', success='error_calories'))
+
+        database.update_meal(meal_id, food_name, quantity, protein, calories, meal_time)
+        return redirect(url_for('home', success='meal_updated'))
+
+    except ValueError:
+        return redirect(url_for('home', success='error_invalid'))
+    except Exception as e:
+        print(f"Error editing meal: {e}")
+        return redirect(url_for('home', success='error'))
+
+@app.route('/get_exercise_progress/<exercise_name>')
+def get_exercise_progress(exercise_name):
+    """Get exercise progress data for charts"""
+    from flask import jsonify
+    try:
+        days = request.args.get('days', default=30, type=int)
+        progress = database.get_exercise_progress(exercise_name, days)
+        return jsonify(progress)
+    except Exception as e:
+        print(f"Error getting exercise progress: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/get_all_exercises')
+def get_all_exercises():
+    """Get all unique exercise names"""
+    from flask import jsonify
+    try:
+        exercises = database.get_all_exercises()
+        return jsonify(exercises)
+    except Exception as e:
+        print(f"Error getting exercises: {e}")
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/add_favorite/<food_name>/<quantity>/<unit>/<protein>/<calories>/<meal_time>')
 def add_favorite(food_name, quantity, unit, protein, calories, meal_time):
